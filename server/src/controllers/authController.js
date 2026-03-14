@@ -152,6 +152,26 @@ exports.getMe = async (req, res) => {
   res.json(req.user);
 };
 
+// POST /api/auth/verify/:token
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await User.findOne({ verificationToken: token });
+    if (!user) return res.status(400).json({ message: "Invalid or expired verification token." });
+    if (user.isVerified) return res.status(400).json({ message: "Account already verified." });
+
+    user.isVerified = true;
+    user.verificationToken = undefined; // Clear token
+    await user.save();
+
+    const authToken = signToken(user._id);
+
+    res.json({ message: "Email verified successfully.", token: authToken, user: { ...user.toObject(), password: undefined } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // POST /api/auth/forgot-password
 exports.forgotPassword = async (req, res) => {
   try {
