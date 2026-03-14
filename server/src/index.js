@@ -15,7 +15,16 @@ const { initializeCounters } = require("./controllers/authController");
 const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
-  cors: { origin: ["https://voicebox-git-main-salopac137s-projects.vercel.app", "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app", "http://localhost:5173"], methods: ["GET","POST"] },
+  cors: {
+    origin: [
+      "https://voicebox-coral.vercel.app",
+      "https://voicebox-git-main-salopac137s-projects.vercel.app",
+      "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app",
+      "http://localhost:5173"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
 
 // Make io accessible to routes/controllers

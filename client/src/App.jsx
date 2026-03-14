@@ -44,6 +44,8 @@ function Shell() {
   const { currentUser, loading } = useAuth();
   const { navOpen } = useApp();
   
+  const isMobile = window.innerWidth < 768;
+  
   if (loading) {
     return (
       <div style={{ minHeight:"100vh", background:"#0B1220", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -67,7 +69,7 @@ function Shell() {
   return (
     <div style={{ minHeight:"100vh", background:"#0B1220", color:"rgba(255,255,255,.88)", fontFamily:"system-ui,sans-serif", fontSize:14 }}>
       <NavBar />
-      <div style={{ marginLeft: navOpen ? "200px" : "60px" }}>
+      <div style={{ marginLeft: isMobile ? 0 : (navOpen ? "200px" : "60px") }}>
         <PageRouter />
       </div>
     </div>

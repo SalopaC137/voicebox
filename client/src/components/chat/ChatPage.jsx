@@ -14,6 +14,7 @@ export default function ChatPage() {
   const r     = currentUser?.role;
   const rooms = currentUser ? buildRooms(currentUser) : [];
   const canSelectYear = isAdminRole(r) || r === "staff";
+  const isMobile = window.innerWidth < 768;
 
   const [room, setRoom] = useState("general");
   const [msg,  setMsg]  = useState("");
@@ -24,6 +25,7 @@ export default function ChatPage() {
     const saved = localStorage.getItem("hiddenChatRooms");
     return saved ? JSON.parse(saved) : [];
   });
+  const [showRooms, setShowRooms] = useState(!isMobile); // On mobile, hide rooms by default
   const bottomRef = useRef(null);
 
   // ── voice state (added) ───────────────────────────────────────────
@@ -172,56 +174,65 @@ export default function ChatPage() {
 
   return (
     <div style={{ ...S.page, display:"flex", flexDirection:"column", height:"calc(100vh - 56px)", paddingBottom:0 }}>
-      <div style={{ fontSize:18, fontWeight:800, color:"white", marginBottom:14 }}>💬 Chat Rooms</div>
+      <div style={{ fontSize:18, fontWeight:800, color:"white", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        💬 Chat Rooms
+        {isMobile && (
+          <button onClick={() => setShowRooms(!showRooms)} style={{ ...S.btn, ...S.btnGhost, fontSize:12, padding:"5px 10px" }}>
+            {showRooms ? "Hide Rooms" : "Show Rooms"}
+          </button>
+        )}
+      </div>
 
       {/* Year selector for staff/admins */}
       {canSelectYear && (
-        <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
           <label style={{ fontSize:14, color:"rgba(255,255,255,.7)", fontWeight:600 }}>Select Year:</label>
           <select value={selectedYear || ""} onChange={e => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
-            style={{ ...S.input, fontSize:12, padding:"6px 10px", width:120 }}>
+            style={{ ...S.input, fontSize:12, padding:"6px 10px", width: isMobile ? "100%" : 120 }}>
             <option value="">All Years</option>
             {YEAR_OF_STUDY.map(y => <option key={y.value} value={y.value}>{y.label}</option>)}
           </select>
         </div>
       )}
 
-      <div style={{ display:"flex", gap:14, flex:1, minHeight:0 }}>
+      <div style={{ display:"flex", gap:14, flex:1, minHeight:0, flexDirection: isMobile ? "column" : "row" }}>
 
-        {/* Room list — unchanged */}
-        <div style={{ width:220, flexShrink:0, overflowY:"auto" }}>
-          <div style={{ ...S.card, padding:10 }}>
-            {visibleRooms.length > 0 ? (
-              <>
-                {visibleRooms.map(rm => (
-                  <div key={rm.id} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
-                    <div onClick={() => handleRoomChange(rm.id)} style={{
-                      flex:1, padding:"8px 10px", borderRadius:7, cursor:"pointer", fontSize:12, fontWeight:600,
-                      background: room===rm.id ? "rgba(13,148,136,.13)" : "transparent",
-                      borderLeft: room===rm.id ? "2px solid #2DD4BF" : "2px solid transparent",
-                      color:      room===rm.id ? "#2DD4BF" : "rgba(255,255,255,.5)",
-                      whiteSpace: "pre",
-                    }}>
-                      {rm.label}
+        {/* Room list */}
+        {(!isMobile || showRooms) && (
+          <div style={{ width: isMobile ? "100%" : 220, flexShrink:0, overflowY:"auto", maxHeight: isMobile ? "200px" : "none" }}>
+            <div style={{ ...S.card, padding:10 }}>
+              {visibleRooms.length > 0 ? (
+                <>
+                  {visibleRooms.map(rm => (
+                    <div key={rm.id} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
+                      <div onClick={() => { handleRoomChange(rm.id); if (isMobile) setShowRooms(false); }} style={{
+                        flex:1, padding:"8px 10px", borderRadius:7, cursor:"pointer", fontSize:12, fontWeight:600,
+                        background: room===rm.id ? "rgba(13,148,136,.13)" : "transparent",
+                        borderLeft: room===rm.id ? "2px solid #2DD4BF" : "2px solid transparent",
+                        color:      room===rm.id ? "#2DD4BF" : "rgba(255,255,255,.5)",
+                        whiteSpace: "pre",
+                      }}>
+                        {rm.label}
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); toggleHideRoom(rm.id); }} style={{
+                        ...S.btn, ...S.btnDanger, padding:"4px 7px", fontSize:10, flexShrink:0, width:"auto"
+                      }}>✕</button>
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); toggleHideRoom(rm.id); }} style={{
-                      ...S.btn, ...S.btnDanger, padding:"4px 7px", fontSize:10, flexShrink:0, width:"auto"
-                    }}>✕</button>
-                  </div>
-                ))}
-                {hiddenRooms.length > 0 && (
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,.25)", padding:"8px 10px", textAlign:"center", marginTop:8, borderTop:"1px solid rgba(255,255,255,.05)" }}>
-                    {hiddenRooms.length} room{hiddenRooms.length===1?"":"s"} hidden
-                  </div>
-                )}
-              </>
-            ) : (
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.3)", padding:10, textAlign:"center" }}>
-                {rooms.length > 0 && hiddenRooms.length > 0 ? "All rooms hidden" : "No chat rooms available"}
-              </div>
-            )}
+                  ))}
+                  {hiddenRooms.length > 0 && (
+                    <div style={{ fontSize:10, color:"rgba(255,255,255,.25)", padding:"8px 10px", textAlign:"center", marginTop:8, borderTop:"1px solid rgba(255,255,255,.05)" }}>
+                      {hiddenRooms.length} room{hiddenRooms.length===1?"":"s"} hidden
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.3)", padding:10, textAlign:"center" }}>
+                  {rooms.length > 0 && hiddenRooms.length > 0 ? "All rooms hidden" : "No chat rooms available"}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Chat window */}
         {visibleRooms.length > 0 ? (

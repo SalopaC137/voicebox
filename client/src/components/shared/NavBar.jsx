@@ -10,6 +10,7 @@ export default function NavBar() {
   const r       = currentUser?.role;
   const isAdmin = isAdminRole(r);
   const isStaff = r === "staff";
+  const isMobile = window.innerWidth < 768;
 
   const links = r === "school_admin"
     ? [["📊","Dashboard","dashboard"],["👥","Users","admin-users"],["📋","Complaints","admin-complaints"],["💬","Chat","chat"]]
@@ -19,9 +20,15 @@ export default function NavBar() {
     ? [["📊","Dashboard","dashboard"],["📥","Inbox","complaints"],["✍️","Submit","new-complaint"],["💬","Chat","chat"]]
     : [["📊","Dashboard","dashboard"],["📋","My Complaints","complaints"],["➕","New","new-complaint"],["💬","Chat","chat"]];
 
+  const navStyle = isMobile
+    ? navOpen
+      ? { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 10px", height: "100vh", position: "fixed", left: 0, top: 0, width: "100%", transition: "all 0.3s ease", zIndex: 1000, background: "#0A0F1E" }
+      : { position: "fixed", top: 10, left: 10, zIndex: 1000, background: "rgba(10,15,30,0.9)", borderRadius: 8, padding: 5 }
+    : { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 10px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "200px" : "60px", transition: "width 0.3s ease" };
+
   return (
-    <div style={{ ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 10px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "200px" : "60px", transition: "width 0.3s ease" }}>
-      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "8px", fontSize: 16, width: "100%", textAlign: "center" }}>
+    <div style={navStyle}>
+      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "8px", fontSize: 16, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
         {navOpen ? "✕" : "☰"}
       </button>
       {navOpen && (
