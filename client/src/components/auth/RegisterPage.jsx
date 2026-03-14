@@ -47,8 +47,10 @@ export default function RegisterPage() {
         setErr("");
         const regData = { ...form, role };
         if (needsCode) regData.activationCode = code.join("");
-        await register(regData);
-        setPage("dashboard");
+        const message = await register(regData);
+        setErr(message); // Show success message
+        // Optionally redirect to login after a delay
+        setTimeout(() => setPage("login"), 3000);
       } catch (e) {
         setErr(e.response?.data?.message || "Registration failed. Please try again.");
       }

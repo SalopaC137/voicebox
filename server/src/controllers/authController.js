@@ -1,5 +1,8 @@
 const jwt  = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/User");
+const { sendVerificationEmail } = require("../utils/sendEmail");
+const { sendResetEmail } = require("../utils/sendResetEmail");
 
 // ── UID counters (initialized from DB on startup) ──
 const counters = { SAD:{}, DAD:{}, STF:{}, STU:{} };
@@ -79,6 +82,9 @@ exports.register = async (req, res) => {
 
     const uniqueId = genUID(role, school, department);
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
     const user = await User.create({
       uniqueId, role, firstName, lastName, email, phone, password,
       school: school || null,
@@ -90,9 +96,20 @@ exports.register = async (req, res) => {
       programType: programType || null,
       staffId: staffId || null,
       designation: designation || "",
+      isVerified: false,
+      verificationToken,
     });
 
-    const token = signToken(user._id);
+    // Send verification email
+    try {
+      await sendVerificationEmail(user.email, verificationToken);
+    } catch (emailErr) {
+      console.error("Failed to send verification email:", emailErr);
+      // Don't fail registration, but log it
+    }
+
+    // Do not return token yet, user needs to verify
+    // const token = signToken(user._id);
 
     // fire a real-time event so administrators currently connected see the new
     // account immediately.  We broadcast to the school's room and to the
@@ -104,7 +121,7 @@ exports.register = async (req, res) => {
       if (user.department) io.to(`dept:${user.department}`).emit("user-added", payload);
     }
 
-    res.status(201).json({ token, user: { ...user.toObject(), password: undefined } });
+    res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -121,6 +138,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
     if (user.isSuspended) return res.status(403).json({ message: "Your account has been suspended by an administrator for malpractice." });
+    if (!user.isVerified) return res.status(403).json({ message: "Please verify your email before logging in." });
 
     const token = signToken(user._id);
     res.json({ token, user: { ...user.toObject(), password: undefined } });
@@ -132,6 +150,58 @@ exports.login = async (req, res) => {
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
   res.json(req.user);
+};
+
+// POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpire = Date.now() + 1000 * 60 * 15; // 15 minutes
+
+    await user.save();
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    await sendResetEmail(user.email, resetLink);
+
+    res.json({ message: "Password reset email sent" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/reset-password/:token
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // Export for server initialization

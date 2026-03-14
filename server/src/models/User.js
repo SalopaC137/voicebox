@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
     staffId:     { type: String, default: null },
     // Status
     isSuspended: { type: Boolean, default: false },
+    isVerified:  { type: Boolean, default: false },
+    verificationToken: { type: String },
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
   },
   { timestamps: true }
 );

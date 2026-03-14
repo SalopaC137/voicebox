@@ -10,7 +10,7 @@ const fmtSecs = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 export default function ChatPage() {
   const { currentUser } = useAuth();
-  const { messages, addMessage } = useApp();
+  const { messages, addMessage, joinChatRoom, leaveChatRoom } = useApp();
   const r     = currentUser?.role;
   const rooms = currentUser ? buildRooms(currentUser) : [];
   const canSelectYear = isAdminRole(r) || r === "staff";
@@ -27,6 +27,7 @@ export default function ChatPage() {
   });
   const [showRooms, setShowRooms] = useState(!isMobile); // On mobile, hide rooms by default
   const bottomRef = useRef(null);
+  const prevRoomRef = useRef(null);
 
   // ── voice state (added) ───────────────────────────────────────────
   const [recording, setRecording] = useState(false);
@@ -70,6 +71,17 @@ export default function ChatPage() {
   const visibleRooms = rooms.filter(rm => !hiddenRooms.includes(rm.id));
   const roomMsgs = messages.filter(m => m.room === effectiveRoom);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [roomMsgs.length]);
+
+  // Join/leave chat rooms
+  useEffect(() => {
+    if (effectiveRoom && effectiveRoom !== prevRoomRef.current) {
+      if (prevRoomRef.current) {
+        leaveChatRoom(prevRoomRef.current);
+      }
+      joinChatRoom(effectiveRoom);
+      prevRoomRef.current = effectiveRoom;
+    }
+  }, [effectiveRoom, joinChatRoom, leaveChatRoom]);
 
   const toggleHideRoom = (roomId) => {
     const updated = hiddenRooms.includes(roomId)
@@ -199,13 +211,13 @@ export default function ChatPage() {
 
         {/* Room list */}
         {(!isMobile || showRooms) && (
-          <div style={{ width: isMobile ? "100%" : 220, flexShrink:0, overflowY:"auto", maxHeight: isMobile ? "200px" : "none" }}>
+          <div style={{ width: isMobile ? "100%" : 220, flexShrink:0, overflowY:"auto" }}>
             <div style={{ ...S.card, padding:10 }}>
               {visibleRooms.length > 0 ? (
                 <>
                   {visibleRooms.map(rm => (
                     <div key={rm.id} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
-                      <div onClick={() => { handleRoomChange(rm.id); if (isMobile) setShowRooms(false); }} style={{
+                      <div onClick={() => handleRoomChange(rm.id)} style={{
                         flex:1, padding:"8px 10px", borderRadius:7, cursor:"pointer", fontSize:12, fontWeight:600,
                         background: room===rm.id ? "rgba(13,148,136,.13)" : "transparent",
                         borderLeft: room===rm.id ? "2px solid #2DD4BF" : "2px solid transparent",

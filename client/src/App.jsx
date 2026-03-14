@@ -5,6 +5,9 @@ import NavBar           from "./components/shared/NavBar";
 import VoiceBoxLanding   from "./landingpage";
 import LoginPage        from "./components/auth/LoginPage";
 import RegisterPage     from "./components/auth/RegisterPage";
+import VerifyPage       from "./components/auth/VerifyPage";
+import ForgotPasswordPage from "./components/auth/ForgotPasswordPage";
+import ResetPasswordPage  from "./components/auth/ResetPasswordPage";
 import Dashboard        from "./pages/Dashboard";
 import ComplaintsPage   from "./pages/ComplaintsPage";
 import NewComplaintPage from "./pages/NewComplaintPage";
@@ -16,9 +19,18 @@ function PageRouter() {
   const { currentUser } = useAuth();
   const { page }        = useApp();
 
+  // Handle special pages from URL
+  if (window.location.pathname.startsWith("/verify/")) {
+    return <VerifyPage />;
+  }
+  if (window.location.pathname.startsWith("/reset-password/")) {
+    return <ResetPasswordPage />;
+  }
+
   if (!currentUser) {
     if (page === "register") return <RegisterPage />;
     if (page === "login") return <LoginPage />;
+    if (page === "forgot-password") return <ForgotPasswordPage />;
     // anything else (landing or unknown) should show landing page
     return <VoiceBoxLanding />;
   }

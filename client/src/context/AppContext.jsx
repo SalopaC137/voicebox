@@ -232,21 +232,15 @@ export function AppProvider({ children }) {
     }
   };
 
-  const addMessage = async (msg) => {
-    try {
-      // Use Socket.io for real-time delivery
-      if (socketRef.current && socketRef.current.connected) {
-        socketRef.current.emit("send_message", msg);
-      } else {
-        // Fallback to HTTP if socket is not connected
-        const token = localStorage.getItem("token");
-        await axios.post(`${API_BASE}/chat/messages`, msg, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-    } catch (err) {
-      console.error("Failed to add message:", err);
-      throw err;
+  const joinChatRoom = (roomId) => {
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("join-room", { room: roomId });
+    }
+  };
+
+  const leaveChatRoom = (roomId) => {
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("leave-room", { room: roomId });
     }
   };
 
@@ -257,6 +251,7 @@ export function AppProvider({ children }) {
       // other real–time updates.
       setUsers,
       addComplaint, updateComplaint, deleteComplaint, addReply, addAdminNote, addMessage,
+      joinChatRoom, leaveChatRoom,
       page, setPage,
       navOpen, setNavOpen,
     }}>

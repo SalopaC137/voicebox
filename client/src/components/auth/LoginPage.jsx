@@ -41,6 +41,10 @@ export default function LoginPage() {
 
         <button style={{ ...S.btn, ...S.btnTeal, ...S.btnFull }} onClick={tryLogin}>Sign In →</button>
 
+        <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
+          <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("forgot-password")}>Forgot Password?</span>
+        </div>
+
         <div style={{ textAlign:"center", marginTop:18, fontSize:12, color:"rgba(255,255,255,.3)" }}>
           New here?{" "}
           <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("register")}>Create an account</span>
