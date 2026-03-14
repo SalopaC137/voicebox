@@ -6,7 +6,7 @@ import S from "../utils/styles";
 import { SCHOOLS, NON_ACADEMIC, ROLE_LABELS } from "../data/university";
 import { getDeptName, getSchoolName, roleIcon, isAdminRole } from "../utils/helpers";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://voicebox-87mb.onrender.com/api";
 
 export default function NewComplaintPage() {
   const { currentUser }           = useAuth();

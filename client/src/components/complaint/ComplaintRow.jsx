@@ -6,7 +6,7 @@ import S from "../../utils/styles";
 import { statusBadge, fmtDate, getDeptName, isAdminRole, roleIcon } from "../../utils/helpers";
 import { ROLE_LABELS } from "../../data/university";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://voicebox-87mb.onrender.com/api";
 
 export default function ComplaintRow({ c }) {
   const { users }                                  = useApp();

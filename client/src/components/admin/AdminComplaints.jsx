@@ -7,7 +7,7 @@ import { scopeComplaints, getDeptName, getSchoolName, fmtDate } from "../../util
 import { SCHOOLS } from "../../data/university";
 import ComplaintRow from "../complaint/ComplaintRow";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://voicebox-87mb.onrender.com/api";
 
 export default function AdminComplaints() {
   const { currentUser }           = useAuth();

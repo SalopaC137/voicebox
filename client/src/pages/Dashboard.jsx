@@ -7,7 +7,7 @@ import ComplaintRow from "../components/complaint/ComplaintRow";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://voicebox-87mb.onrender.com/api";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
