@@ -5,7 +5,7 @@ import axios from "axios";
 import S from "../../utils/styles";
 import { scopeUsers, getDeptName, getSchoolName, roleIcon } from "../../utils/helpers";
 
-const API_BASE = "https://voicebox-87mb.onrender.com/api";
+const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
 export default function AdminUsers() {
   const { currentUser }         = useAuth();

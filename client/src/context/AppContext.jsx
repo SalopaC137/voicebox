@@ -5,8 +5,8 @@ import { useAuth } from "./AuthContext";
 import { isAdminRole } from "../utils/helpers";
 
 const AppCtx = createContext(null);
-const API_BASE = "https://voicebox-87mb.onrender.com/api";
-const SOCKET_URL = "https://voicebox-87mb.onrender.com";
+const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
+const SOCKET_URL = `${import.meta.env.VITE_SERVER_URL}`;
 
 export function AppProvider({ children }) {
   const { currentUser, loading: authLoading } = useAuth();

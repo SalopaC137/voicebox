@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const AuthCtx = createContext(null);
-const API_BASE = "https://voicebox-87mb.onrender.com/api";
+const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
