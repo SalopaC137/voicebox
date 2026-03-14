@@ -22,7 +22,7 @@ const io     = new Server(server, {
 app.locals.io = io;
 
 // ── Middleware ───────────────────────────────────────────────
-app.use(cors({ origin: ["https://voicebox-git-main-salopac137s-projects.vercel.app", "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app", "http://localhost:5173"] }));
+app.use(cors({ origin: ["https://voicebox-git-main-salopac137s-projects.vercel.app", "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app", "http://localhost:5173"], credentials: true }));
 app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────
