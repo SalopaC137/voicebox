@@ -3,8 +3,10 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendResetEmail = async (email, link) => {
+  console.log("Sending reset email to:", email, "with link:", link);
+
   await resend.emails.send({
-    from: "VoiceBox <noreply@voicebox.com>",
+    from: "VoiceBox <onboarding@resend.dev>",
     to: email,
     subject: "Reset your password",
     html: `

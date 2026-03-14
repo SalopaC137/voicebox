@@ -5,8 +5,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendVerificationEmail = async (email, token) => {
   const verificationLink = `${process.env.CLIENT_URL}/verify/${token}`;
 
+  console.log("Sending verification email to:", email, "with link:", verificationLink);
+
   await resend.emails.send({
-    from: "VoiceBox <noreply@voicebox.com>",
+    from: "VoiceBox <onboarding@resend.dev>", // Use Resend's test domain
     to: email,
     subject: "Verify your VoiceBox account",
     html: `

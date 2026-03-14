@@ -102,7 +102,9 @@ exports.register = async (req, res) => {
 
     // Send verification email
     try {
+      console.log("About to send verification email for user:", user.email);
       await sendVerificationEmail(user.email, verificationToken);
+      console.log("Verification email sent successfully");
     } catch (emailErr) {
       console.error("Failed to send verification email:", emailErr);
       // Don't fail registration, but log it
