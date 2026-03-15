@@ -215,6 +215,8 @@ exports.resetPassword = async (req, res) => {
     }
 
     user.password = password;
+    // Reset link is delivered to mailbox owner, so we can trust email ownership.
+    user.isVerified = true;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
