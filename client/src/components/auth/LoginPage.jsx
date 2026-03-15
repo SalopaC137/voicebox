@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
-import axios from "axios";
-
-const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -12,28 +9,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [pass,  setPass]  = useState("");
   const [err,   setErr]   = useState("");
-  const [verifyToken, setVerifyToken] = useState("");
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("verify");
-    if (token) {
-      setVerifyToken(token);
-    }
-  }, []);
-
   const tryLogin = async () => {
     const r = await login(email, pass);
     if (r === "ok") {
       setErr("");
-      if (verifyToken) {
-        try {
-          await axios.get(`${API_BASE}/auth/verify/${verifyToken}`);
-          alert("Email verified successfully!");
-        } catch (error) {
-          alert("Verification failed: " + (error.response?.data?.message || "Unknown error"));
-        }
-      }
       setPage("dashboard");
     } else {
       setErr(r);
