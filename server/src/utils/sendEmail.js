@@ -15,6 +15,7 @@ const sendVerificationEmail = async (email, token) => {
       <h2>Welcome to VoiceBox</h2>
       <p>Click below to verify your account:</p>
       <a href="${verificationLink}">Verify Account</a>
+      <p>This is an automated email from VoiceBox. Please do not reply to this message.</p>
     `
   });
 };

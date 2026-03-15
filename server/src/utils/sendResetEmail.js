@@ -14,6 +14,7 @@ const sendResetEmail = async (email, link) => {
       <p>Click the link below to reset your password</p>
       <a href="${link}">Reset Password</a>
       <p>This link expires in 15 minutes.</p>
+      <p>This is an automated email from VoiceBox. Please do not reply to this message.</p>
     `
   });
 };
