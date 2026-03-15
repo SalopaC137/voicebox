@@ -21,7 +21,9 @@ function PageRouter() {
 
   // Handle special pages from URL
   if (window.location.pathname.startsWith("/verify/")) {
-    return <VerifyPage />;
+    const token = window.location.pathname.split("/verify/")[1];
+    window.location.href = `/login?verify=${token}`;
+    return null;
   }
   if (window.location.pathname.startsWith("/reset-password/")) {
     return <ResetPasswordPage />;

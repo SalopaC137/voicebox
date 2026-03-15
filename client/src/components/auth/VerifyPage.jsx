@@ -18,7 +18,7 @@ export default function VerifyPage() {
       return;
     }
 
-    axios.post(`${API_BASE}/auth/verify/${token}`)
+    axios.get(`${API_BASE}/auth/verify/${token}`)
       .then(res => {
         setStatus("success");
         setMessage("Email verified successfully! You can now log in.");
