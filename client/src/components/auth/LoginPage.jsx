@@ -35,9 +35,9 @@ export default function LoginPage() {
         }
       }
       setPage("dashboard");
-    } else if (r==="suspended") setErr("Account suspended. Contact your administrator.");
-    else                      setErr("Invalid email or password.");
-  };
+    } else {
+      setErr(r);
+    }
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#060C18,#0B1820)" }}>

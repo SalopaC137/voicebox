@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       const msg = err.response?.data?.message || "Login failed";
       setError(msg);
-      return err.response?.status === 403 ? "suspended" : "invalid";
+      return msg;
     }
   };
 
