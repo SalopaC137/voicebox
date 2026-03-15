@@ -18,7 +18,7 @@ export const statusBadge = s =>
   s === "open" ? S.badgeOpen : s === "in-progress" ? S.badgeProg : S.badgeRes;
 
 export const roleIcon = r =>
-  ({ school_admin:"🏫", dept_admin:"🏬", staff:"🛠️", student:"🎓" }[r] || "👤");
+  ({ school_admin:"🏫", dept_admin:"🏬", staff:"🛠", student:"🎓" }[r] || "👤");
 
 export const rolePillStyle = r =>
   ({ school_admin:S.pillSchool, dept_admin:S.pillDept, staff:S.pillStaff, student:S.pillStudent }[r] || S.pillStaff);

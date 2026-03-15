@@ -61,7 +61,7 @@ export default function ComplaintRow({ c }) {
             <span style={{ ...S.badge, ...statusBadge(c.status) }}>{c.status}</span>
             {c.isAnonymous && (
             <span style={{ ...S.badge, ...S.badgeAnon }}>
-              🎭 Anon{isSubmitter?" (you)":""}
+              Anon{isSubmitter?" (you)":""}
             </span>
           )}
             <span style={{ ...S.badge, background:"rgba(255,255,255,.06)", color:"rgba(255,255,255,.4)", fontSize:9 }}>{c.category}</span>
@@ -112,7 +112,7 @@ export default function ComplaintRow({ c }) {
           {/* Admin anon reveal */}
           {isAdmin && c.isAnonymous && submitter && (
             <div style={{ fontSize:11, color:"#C4B5FD", fontFamily:"monospace", background:"rgba(139,92,246,.07)", border:"1px solid rgba(139,92,246,.2)", borderRadius:8, padding:"9px 12px", marginBottom:10 }}>
-              <div style={{fontWeight:700, color:"#D8B4FE", marginBottom:3}}>🎭 Admin View — Anonymous Submitter</div>
+              <div style={{fontWeight:700, color:"#D8B4FE", marginBottom:3}}>Admin View - Anonymous Submitter</div>
               <div style={{fontSize:10, lineHeight:1.6}}>
                 <b style={{color:"white"}}>Name:</b> {submitter.firstName} {submitter.lastName}<br/>
                 <b style={{color:"white"}}>Position:</b> {submitter.designation || submitter.role || "Staff"}<br/>
@@ -142,7 +142,7 @@ export default function ComplaintRow({ c }) {
                 const roleColors = {
                   school_admin: { bg:"rgba(245,158,11,.07)", border:"rgba(245,158,11,.18)", text:"#FCD34D", icon:"🏫" },
                   dept_admin:   { bg:"rgba(168,85,247,.07)", border:"rgba(168,85,247,.18)", text:"#D8B4FE", icon:"🏬" },
-                  staff:        { bg:"rgba(59,130,246,.07)", border:"rgba(59,130,246,.18)", text:"#93C5FD", icon:"🛠️" },
+                  staff:        { bg:"rgba(59,130,246,.07)", border:"rgba(59,130,246,.18)", text:"#93C5FD", icon:"🛠" },
                   student:      { bg:"rgba(16,185,129,.07)", border:"rgba(16,185,129,.18)", text:"#6EE7B7", icon:"🎓" },
                 };
                 const style = roleColors[reply.senderRole] || roleColors.staff;

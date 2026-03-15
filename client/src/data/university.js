@@ -91,7 +91,7 @@ export const NON_ACADEMIC = [
 ];
 
 export const ROLE_LABELS = {
-  staff:        { label:"Staff",        icon:"🛠️" },
+  staff:        { label:"Staff",        icon:"🛠" },
   dept_admin:   { label:"Dept Admin",   icon:"🏬" },
   school_admin: { label:"School Admin", icon:"🏫" },
   student:      { label:"Student",      icon:"🎓" },

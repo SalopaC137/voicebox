@@ -281,7 +281,7 @@ export default function VoiceBoxLanding() {
             {[
               { icon:"🏫", ri:"vb-ri-t", card:"vb-tc", name:"School Admin", uid:"SAD-XXX-XXXX", desc:"Oversees all complaints and users across their entire school. Can view department-level data, generate reports, and message staff about specific issues." },
               { icon:"🏬", ri:"vb-ri-a", card:"vb-ac", name:"Dept Admin",   uid:"DAD-XXX-XXXX", desc:"HoD or senior lecturer who manages their department's complaints plus a personal inbox as a lecturer. Bridges school-level and dept-level visibility." },
-              { icon:"🛠️", ri:"vb-ri-b", card:"vb-tc", name:"Staff",        uid:"STF-XXX-XXXX", desc:"Lecturers and non-academic staff who receive complaints directed at them. Can reply, update status, and access the department chat room." },
+              { icon:"🛠", ri:"vb-ri-b", card:"vb-tc", name:"Staff",        uid:"STF-XXX-XXXX", desc:"Lecturers and non-academic staff who receive complaints directed at them. Can reply, update status, and access the department chat room." },
               { icon:"🎓", ri:"vb-ri-g", card:"vb-ac", name:"Student",      uid:"STU-XXX-XXXXX", desc:"Enrolled students who submit complaints or suggestions to any staff member. Can choose to stay fully anonymous — identity hidden from the recipient." },
             ].map((r) => (
               <div className={`vb-role-card ${r.card} vb-r`} key={r.name}>
@@ -303,7 +303,7 @@ export default function VoiceBoxLanding() {
           <p className="vb-sec-p vb-r">Built for a real university environment — not a generic help-desk template.</p>
           <div className="vb-feat-grid">
             {[
-              ["01", "🎭 True Anonymity",        "Students submit fully anonymous complaints. Recipients see no name or UID. Admins retain a private reveal for oversight — never shown publicly."],
+              ["01", "🎭 True Anonymity",        "Students submit fully anonymous complaints. Recipients see no name or UID. Admins retain a private reveal for oversight - never shown publicly."],
               ["02", "🎯 Targeted Submission",   "Every complaint must be directed at a specific person — school → department → individual. No vague reports lost in a void. Accountability built in."],
               ["03", "🔒 Scoped Visibility",     "School admins see only their school. Dept admins see only their department. Staff see only their inbox. No cross-school data leakage by design."],
               ["04", "💬 Live Chat Rooms",       "Department and school-level chat rooms, role-scoped. School admins broadcast across all departments. Students only see their own department's room."],

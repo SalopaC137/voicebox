@@ -264,7 +264,7 @@ export default function ChatPage() {
               </div>
             </div>
 
-            {/* Messages — only the bubble content block changed to support voice */}
+            {/* Messages - only the bubble content block changed to support voice */}
             <div style={{ flex:1, overflowY:"auto", padding:14, display:"flex", flexDirection:"column", gap:9 }}>
               {roomMsgs.map(m => {
                 const isMe = m.sender === currentUser._id;
@@ -283,7 +283,7 @@ export default function ChatPage() {
                       </div>
                       {isAdminRole(currentUser?.role) && m.isAnonymous && (
                         <div style={{ fontSize:9, color:"#8B5CF6", fontFamily:"monospace", marginTop:2, fontStyle:"italic" }}>
-                          🎭 Admin: {m.senderFirstName} {m.senderLastName} ({m.senderUid})
+                          Anon Admin: {m.senderFirstName} {m.senderLastName} ({m.senderUid})
                         </div>
                       )}
                       <div style={{ fontSize:9.5, color:"rgba(255,255,255,.27)", marginTop:3, textAlign:isMe?"right":"left" }}>
@@ -396,7 +396,7 @@ function RecordingBar({ secs, onStop, onCancel }) {
       <div style={{ flex:1 }} />
 
       <button onClick={onStop} style={{ ...S.btn, padding:"5px 12px", fontSize:12, background:"rgba(16,185,129,.15)", border:"1px solid rgba(16,185,129,.35)", color:"#6EE7B7" }}>
-        ■ Stop
+        Stop
       </button>
       <button onClick={onCancel} style={{ ...S.btn, padding:"5px 10px", fontSize:12, background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.25)", color:"#FCA5A5" }}>
         ✕

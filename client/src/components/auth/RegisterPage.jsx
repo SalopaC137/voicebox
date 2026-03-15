@@ -63,7 +63,7 @@ export default function RegisterPage() {
   const roleOpts = [
     ["school_admin", "🏫", "School Admin", "Manages an entire school"],
     ["dept_admin",   "🏬", "Dept Admin",   "Manages a department (also lecturer)"],
-    ["staff",        "🛠️", "Staff",         "Lecturer / non-academic staff"],
+    ["staff",        "🛠", "Staff",         "Lecturer / non-academic staff"],
     ["student",      "🎓", "Student",       "Enrolled student"],
   ];
 
