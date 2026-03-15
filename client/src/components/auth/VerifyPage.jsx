@@ -22,8 +22,7 @@ export default function VerifyPage() {
       .then(res => {
         setStatus("success");
         setMessage("Email verified successfully! You can now log in.");
-        // Optionally auto-login or redirect
-        setTimeout(() => setPage("login"), 3000);
+        setTimeout(() => window.location.replace("/"), 2500);
       })
       .catch(err => {
         setStatus("error");
@@ -37,7 +36,7 @@ export default function VerifyPage() {
       {status === "verifying" && <p>Verifying your email...</p>}
       {status === "success" && <p style={{ color: "green" }}>{message}</p>}
       {status === "error" && <p style={{ color: "red" }}>{message}</p>}
-      <button onClick={() => setPage("login")} style={S.btnTeal}>Go to Login</button>
+      <button onClick={() => window.location.replace("/")} style={{ ...S.btn, ...S.btnTeal, marginTop:16, padding:"10px 28px" }}>Go to Login</button>
     </div>
   );
 }
