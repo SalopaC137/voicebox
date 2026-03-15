@@ -189,7 +189,7 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const resetLink = `https://voicebox.qzz.io/reset-password/${resetToken}`;
 
     await sendResetEmail(user.email, resetLink);
 

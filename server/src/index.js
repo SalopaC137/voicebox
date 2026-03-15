@@ -20,6 +20,7 @@ const io     = new Server(server, {
       "https://voicebox-coral.vercel.app",
       "https://voicebox-git-main-salopac137s-projects.vercel.app",
       "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app",
+      "https://voicebox.qzz.io",
       "http://localhost:5173"
     ],
     methods: ["GET", "POST"],
