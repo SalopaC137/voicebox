@@ -64,7 +64,7 @@ function Shell() {
     return (
       <div style={{ minHeight:"100vh", background:"#0B1220", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:32, marginBottom:12 }}>📢</div>
+          <div style={{ fontSize:32, marginBottom:12 }}>VB</div>
           <div style={{ color:"rgba(255,255,255,.6)", fontSize:14 }}>Loading...</div>
         </div>
       </div>
