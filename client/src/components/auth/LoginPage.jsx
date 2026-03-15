@@ -38,6 +38,7 @@ export default function LoginPage() {
     } else {
       setErr(r);
     }
+  };
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#060C18,#0B1820)" }}>
