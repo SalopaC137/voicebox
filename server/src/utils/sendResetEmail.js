@@ -6,7 +6,7 @@ const sendResetEmail = async (email, link) => {
   console.log("Sending reset email to:", email, "with link:", link);
 
   await resend.emails.send({
-    from: "VoiceBox <onboarding@resend.dev>",
+    from: "VoiceBox <noreply@voicebox.qzz.io>",
     to: email,
     subject: "Reset your password",
     html: `

@@ -8,7 +8,7 @@ const sendVerificationEmail = async (email, token) => {
   console.log("Sending verification email to:", email, "with link:", verificationLink);
 
   await resend.emails.send({
-    from: "VoiceBox <onboarding@resend.dev>", // Use Resend's test domain
+    from: "VoiceBox <noreply@voicebox.qzz.io>",
     to: email,
     subject: "Verify your VoiceBox account",
     html: `
