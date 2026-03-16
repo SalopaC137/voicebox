@@ -100,16 +100,6 @@ exports.register = async (req, res) => {
       verificationToken,
     });
 
-    // Send verification email
-    try {
-      console.log("About to send verification email for user:", user.email);
-      await sendVerificationEmail(user.email, verificationToken);
-      console.log("Verification email sent successfully");
-    } catch (emailErr) {
-      console.error("Failed to send verification email:", emailErr);
-      // Don't fail registration, but log it
-    }
-
     // Do not return token yet, user needs to verify
     // const token = signToken(user._id);
 
@@ -123,7 +113,13 @@ exports.register = async (req, res) => {
       if (user.department) io.to(`dept:${user.department}`).emit("user-added", payload);
     }
 
+    // Respond immediately — don't wait for the email
     res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
+
+    // Send verification email in the background
+    sendVerificationEmail(user.email, verificationToken)
+      .then(() => console.log("Verification email sent to:", user.email))
+      .catch((emailErr) => console.error("Failed to send verification email:", emailErr));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
