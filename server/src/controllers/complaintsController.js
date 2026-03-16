@@ -1,5 +1,34 @@
 const Complaint = require("../models/Complaint");
 const User      = require("../models/User");
+const Notification = require("../models/Notification");
+
+async function createUserNotification(req, userId, payload) {
+  const notification = await Notification.create({
+    userId,
+    message: payload.message,
+    complaintId: payload.complaintId || null,
+    type: payload.type || "system",
+  });
+
+  const io = req.app.locals.io;
+  if (io) {
+    io.to(`user:${userId}`).emit("notification", notification.toObject());
+  }
+  return notification;
+}
+
+async function notifyParticipants(req, complaint, actorId, payloadBuilder) {
+  const participantIds = [complaint.submittedBy, complaint.targetLecturerId]
+    .filter(Boolean)
+    .map((id) => String(id));
+  const uniqueRecipients = [...new Set(participantIds)]
+    .filter((id) => id !== String(actorId));
+
+  await Promise.all(uniqueRecipients.map((recipientId) => {
+    const payload = payloadBuilder(recipientId);
+    return createUserNotification(req, recipientId, payload);
+  }));
+}
 
 function scopeFilter(user) {
   if (user.role === "school_admin") return { targetSchool: user.school };
@@ -64,6 +93,15 @@ exports.createComplaint = async (req, res) => {
       targetSchool, targetDept, targetLecturerId, targetLecturerUid,
     });
 
+    const entryType = type === "suggestion" ? "suggestion" : "complaint";
+    const senderName = isAnonymous ? "Anonymous user" : `${req.user.firstName} ${req.user.lastName}`;
+    const message = `New ${entryType} from ${senderName}: ${title}`;
+    createUserNotification(req, targetLecturerId, {
+      message,
+      complaintId: complaint._id,
+      type: entryType,
+    }).catch((err) => console.error("Failed to create notification:", err.message));
+
     res.status(201).json(complaint);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -88,6 +126,13 @@ exports.updateStatus = async (req, res) => {
 
     c.status = req.body.status;
     await c.save();
+
+    // Notify the other participant(s) that status has changed.
+    notifyParticipants(req, c, req.user._id, () => ({
+      message: `Status changed: \"${c.title}\" is now ${c.status}.`,
+      complaintId: c._id,
+      type: c.type === "suggestion" ? "suggestion" : "complaint",
+    })).catch((err) => console.error("Failed to notify status change:", err.message));
     
     // Emit real-time event
     const io = req.app.locals.io;
@@ -137,6 +182,20 @@ exports.addReply = async (req, res) => {
     c.readBy = [];
     
     await c.save();
+
+    const actorName = `${req.user.firstName} ${req.user.lastName}`;
+    const senderIsSubmitter = String(c.submittedBy) === String(req.user._id);
+    const senderLabel = senderIsSubmitter
+      ? "The submitter"
+      : req.user.role === "dept_admin"
+        ? `${actorName} (Department Admin)`
+        : actorName;
+
+    notifyParticipants(req, c, req.user._id, () => ({
+      message: `${senderLabel} replied on \"${c.title}\".`,
+      complaintId: c._id,
+      type: c.type === "suggestion" ? "suggestion" : "complaint",
+    })).catch((err) => console.error("Failed to notify new reply:", err.message));
     
     // Emit real-time event with full complaint data
     const io = req.app.locals.io;
