@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider,  useApp  } from "./context/AppContext";
 
@@ -117,6 +118,23 @@ function Shell() {
 }
 
 export default function App() {
+  useEffect(() => {
+    if (window.__oneSignalInitialized) return;
+    window.__oneSignalInitialized = true;
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "26f16bf7-589f-4e66-bdf3-25a409693225",
+        notifyButton: {
+          enable: true,
+        },
+        serviceWorkerPath: "/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
+      });
+    });
+  }, []);
+
   return (
     <AuthProvider>
       <AppProvider>
