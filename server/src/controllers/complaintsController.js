@@ -93,6 +93,19 @@ exports.createComplaint = async (req, res) => {
       targetSchool, targetDept, targetLecturerId, targetLecturerUid,
     });
 
+    const complaintWithRefs = await complaint.populate([
+      { path: "submittedBy", select: "firstName lastName uniqueId" },
+      { path: "targetLecturerId", select: "firstName lastName uniqueId designation" },
+    ]);
+
+    const io = req.app.locals.io;
+    if (io) {
+      // Recipient gets instant complaint card, just like instant chat/reply updates.
+      io.to(`user:${targetLecturerId}`).emit("complaint-created", complaintWithRefs.toObject());
+      if (targetSchool) io.to(`school:${targetSchool}`).emit("complaint-created", complaintWithRefs.toObject());
+      if (targetDept) io.to(`dept:${targetDept}`).emit("complaint-created", complaintWithRefs.toObject());
+    }
+
     const entryType = type === "suggestion" ? "suggestion" : "complaint";
     const senderName = isAnonymous ? "Anonymous user" : `${req.user.firstName} ${req.user.lastName}`;
     const message = `New ${entryType} from ${senderName}: ${title}`;
@@ -102,7 +115,7 @@ exports.createComplaint = async (req, res) => {
       type: entryType,
     }).catch((err) => console.error("Failed to create notification:", err.message));
 
-    res.status(201).json(complaint);
+    res.status(201).json(complaintWithRefs);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

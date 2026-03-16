@@ -14,11 +14,13 @@ export function AppProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [toasts, setToasts] = useState([]);
+  const [complaintBanner, setComplaintBanner] = useState(null);
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState("dashboard");
   const [navOpen, setNavOpen] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const socketRef = useRef(null);
+  const bannerTimeoutRef = useRef(null);
 
   const pushToast = (notification) => {
     const toastId = `${notification._id || "toast"}-${Date.now()}`;
@@ -36,6 +38,37 @@ export function AppProvider({ children }) {
 
   const dismissToast = (toastId) => {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  };
+
+  const dismissComplaintBanner = () => {
+    setComplaintBanner(null);
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
+      bannerTimeoutRef.current = null;
+    }
+  };
+
+  const showComplaintBanner = (complaint) => {
+    const submitterId = String(complaint?.submittedBy?._id || complaint?.submittedBy || "");
+    const isOwnComplaint = submitterId && String(currentUser?._id) === submitterId;
+    if (isOwnComplaint) return;
+
+    const typeLabel = complaint?.type === "suggestion" ? "Suggestion" : "Complaint";
+    const senderName = complaint?.isAnonymous
+      ? "Anonymous user"
+      : `${complaint?.submittedBy?.firstName || ""} ${complaint?.submittedBy?.lastName || ""}`.trim() || "A user";
+
+    setComplaintBanner({
+      id: `${complaint?._id || "complaint"}-${Date.now()}`,
+      label: `New ${typeLabel} Received`,
+      message: `${senderName} sent \"${complaint?.title || "Untitled"}\".`,
+    });
+
+    if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    bannerTimeoutRef.current = setTimeout(() => {
+      setComplaintBanner(null);
+      bannerTimeoutRef.current = null;
+    }, 5000);
   };
 
   // Sync page state with auth state
@@ -88,8 +121,15 @@ export function AppProvider({ children }) {
       setMessages([]);
       setNotifications([]);
       setToasts([]);
+      setComplaintBanner(null);
     }
   }, [currentUser, authLoading]);
+
+  useEffect(() => {
+    return () => {
+      if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    };
+  }, []);
 
   // Fetch users if admin
   useEffect(() => {
@@ -138,6 +178,17 @@ export function AppProvider({ children }) {
       socket.on("complaint-updated", (data) => {
         console.log("🔄 Complaint updated:", data._id);
         setComplaints(prev => prev.map(c => c._id === data._id ? { ...c, ...data } : c));
+      });
+
+      // Listen for newly created complaints/suggestions
+      socket.on("complaint-created", (data) => {
+        console.log("🆕 Complaint created:", data._id);
+        setComplaints((prev) => {
+          const exists = prev.some((c) => String(c._id) === String(data._id));
+          if (exists) return prev;
+          return [data, ...prev];
+        });
+        showComplaintBanner(data);
       });
 
       // Listen for user events (admins only)
@@ -320,12 +371,12 @@ export function AppProvider({ children }) {
 
   return (
     <AppCtx.Provider value={{
-      complaints, messages, notifications, unreadCount, toasts, users,
+      complaints, messages, notifications, unreadCount, toasts, complaintBanner, users,
       // expose setter so components can remove suspended users or apply
       // other real–time updates.
       setUsers,
       addComplaint, updateComplaint, deleteComplaint, addReply, addAdminNote, addMessage,
-      markNotificationAsRead, markAllNotificationsAsRead, dismissToast,
+      markNotificationAsRead, markAllNotificationsAsRead, dismissToast, dismissComplaintBanner,
       joinChatRoom, leaveChatRoom,
       page, setPage,
       navOpen, setNavOpen,

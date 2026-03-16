@@ -54,7 +54,7 @@ function PageRouter() {
 
 function Shell() {
   const { currentUser, loading } = useAuth();
-  const { navOpen, toasts, dismissToast } = useApp();
+  const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner } = useApp();
   
   const isMobile = window.innerWidth < 768;
   
@@ -84,6 +84,20 @@ function Shell() {
       <div style={{ marginLeft: isMobile ? 0 : (navOpen ? "200px" : "60px") }}>
         <PageRouter />
       </div>
+
+      {complaintBanner && (
+        <div style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 1300, width: "min(520px, calc(100vw - 24px))" }}>
+          <div style={{ background: "rgba(6,78,59,.95)", border: "1px solid rgba(52,211,153,.45)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#6EE7B7", fontWeight: 800, marginBottom: 3 }}>{complaintBanner.label}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,.92)" }}>{complaintBanner.message}</div>
+              </div>
+              <button onClick={dismissComplaintBanner} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,.6)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ position: "fixed", top: 14, right: 14, zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: "min(360px, calc(100vw - 24px))" }}>
         {toasts.map((toast) => (
