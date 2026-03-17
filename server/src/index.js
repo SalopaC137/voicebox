@@ -13,6 +13,12 @@ const notificationRoutes = require("./routes/notifications");
 const registerSocket   = require("./utils/socket");
 const { initializeCounters } = require("./controllers/authController");
 
+const missingOneSignalConfig = ["ONESIGNAL_APP_ID", "ONESIGNAL_API_KEY"]
+  .filter((key) => !process.env[key]);
+if (missingOneSignalConfig.length > 0) {
+  console.warn(`[Startup] OneSignal disabled: missing ${missingOneSignalConfig.join(", ")}`);
+}
+
 const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
