@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications";
+const ONESIGNAL_API_URL = "https://api.onesignal.com/notifications?c=push";
 
 function getMissingConfig() {
   const missing = [];
@@ -58,14 +58,16 @@ async function sendNotificationToUser(userId, message) {
       ONESIGNAL_API_URL,
       {
         app_id: process.env.ONESIGNAL_APP_ID,
-        include_external_user_ids: [String(userId)],
-        channel_for_external_user_ids: "push",
+        include_aliases: {
+          external_id: [String(userId)],
+        },
+        target_channel: "push",
         headings: { en: "VoiceBox" },
         contents: { en: message },
       },
       {
         headers: {
-          Authorization: `Basic ${process.env.ONESIGNAL_API_KEY}`,
+          Authorization: `Key ${process.env.ONESIGNAL_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
