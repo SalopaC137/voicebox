@@ -1,7 +1,7 @@
 const Complaint = require("../models/Complaint");
 const User      = require("../models/User");
 const Notification = require("../models/Notification");
-const { sendNotificationToAll } = require("../utils/onesignal");
+const { sendNotificationToUser } = require("../utils/onesignal");
 
 async function createUserNotification(req, userId, payload) {
   const notification = await Notification.create({
@@ -15,6 +15,10 @@ async function createUserNotification(req, userId, payload) {
   if (io) {
     io.to(`user:${userId}`).emit("notification", notification.toObject());
   }
+
+  sendNotificationToUser(userId, payload.message)
+    .catch((err) => console.error("Failed to send OneSignal notification:", err.message));
+
   return notification;
 }
 
@@ -115,9 +119,6 @@ exports.createComplaint = async (req, res) => {
       complaintId: complaint._id,
       type: entryType,
     }).catch((err) => console.error("Failed to create notification:", err.message));
-
-    sendNotificationToAll(`New ${entryType} submitted: ${title}`)
-      .catch((err) => console.error("Failed to send OneSignal notification:", err.message));
 
     res.status(201).json(complaintWithRefs);
   } catch (err) {

@@ -91,6 +91,25 @@ export function AppProvider({ children }) {
     }
   }, [authLoading, currentUser]);
 
+  // Keep OneSignal identity in sync with the authenticated user so
+  // server-side targeted pushes can reach this browser subscription.
+  useEffect(() => {
+    const oneSignalDeferred = window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+    oneSignalDeferred.push(async (OneSignal) => {
+      try {
+        if (!currentUser?._id) {
+          await OneSignal.logout();
+          return;
+        }
+
+        await OneSignal.login(String(currentUser._id));
+      } catch (err) {
+        console.error("Failed to sync OneSignal user identity:", err);
+      }
+    });
+  }, [currentUser?._id]);
+
   // Fetch complaints, chat messages, and missed notifications on login
   useEffect(() => {
     if (currentUser && !authLoading) {

@@ -17,6 +17,7 @@ export default function RegisterPage() {
   });
   const [code, setCode] = useState(["","","","","",""]);
   const [err,  setErr]  = useState("");
+  const [success, setSuccess] = useState("");
 
   const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const needsCode   = role === "school_admin" || role === "dept_admin";
@@ -45,18 +46,25 @@ export default function RegisterPage() {
       if (!form.password || form.password !== form.confirm) { setErr("Passwords don't match."); return; }
       try {
         setErr("");
+        setSuccess("");
         const regData = { ...form, role };
         if (needsCode) regData.activationCode = code.join("");
-        const message = await register(regData);
-        setErr(message); // Show success message
-        // Optionally redirect to login after a delay
+        await register(regData);
+
+        const verifyMessage = "Account created successfully. Check your email to verify your account before signing in. If you do not see it, check your spam or junk folder.";
+        setSuccess(verifyMessage);
+        sessionStorage.setItem("registerNotice", verifyMessage);
+
+        // Redirect to login after showing success guidance.
         setTimeout(() => setPage("login"), 3000);
       } catch (e) {
+        setSuccess("");
         setErr(e.response?.data?.message || "Registration failed. Please try again.");
       }
       return;
     }
     setErr("");
+    setSuccess("");
     setStep(s => s + 1);
   };
 
@@ -265,6 +273,10 @@ export default function RegisterPage() {
 
         {err && (
           <div style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"8px 12px", color:"#fca5a5", fontSize:12, margin:"12px 0" }}>{err}</div>
+        )}
+
+        {success && (
+          <div style={{ background:"rgba(16,185,129,.12)", border:"1px solid rgba(16,185,129,.4)", borderRadius:8, padding:"8px 12px", color:"#86efac", fontSize:12, margin:"12px 0" }}>{success}</div>
         )}
 
         <div style={{ display:"flex", gap:9, marginTop:18 }}>

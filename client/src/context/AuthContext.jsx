@@ -58,6 +58,16 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+
+    const oneSignalDeferred = window.OneSignalDeferred = window.OneSignalDeferred || [];
+    oneSignalDeferred.push(async (OneSignal) => {
+      try {
+        await OneSignal.logout();
+      } catch (err) {
+        console.error("Failed to logout OneSignal user:", err);
+      }
+    });
+
     setCurrentUser(null);
   };
 

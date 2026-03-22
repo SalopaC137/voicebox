@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
@@ -9,6 +9,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [pass,  setPass]  = useState("");
   const [err,   setErr]   = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const registerNotice = sessionStorage.getItem("registerNotice");
+    if (registerNotice) {
+      setNotice(registerNotice);
+      sessionStorage.removeItem("registerNotice");
+    }
+  }, []);
+
   const tryLogin = async () => {
     const r = await login(email, pass);
     if (r === "ok") {
@@ -39,6 +49,10 @@ export default function LoginPage() {
 
         {err && (
           <div style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"8px 12px", color:"#fca5a5", fontSize:12, marginBottom:12 }}>{err}</div>
+        )}
+
+        {notice && (
+          <div style={{ background:"rgba(16,185,129,.12)", border:"1px solid rgba(16,185,129,.4)", borderRadius:8, padding:"8px 12px", color:"#86efac", fontSize:12, marginBottom:12 }}>{notice}</div>
         )}
 
         <button style={{ ...S.btn, ...S.btnTeal, ...S.btnFull }} onClick={tryLogin}>Sign In →</button>
