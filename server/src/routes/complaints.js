@@ -16,6 +16,6 @@ router.patch("/:id/status",     updateStatus);
 router.patch("/:id/read",       markAsRead);
 router.post("/:id/reply",       addReply);
 router.post("/:id/admin-note",  addAdminNote);
-router.delete("/:id",           restrictTo("school_admin","dept_admin"), deleteComplaint);
+router.delete("/:id",           deleteComplaint);
 
 module.exports = router;

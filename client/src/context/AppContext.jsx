@@ -13,11 +13,64 @@ export function AppProvider({ children }) {
   const { currentUser, loading: authLoading } = useAuth();
   const [complaints, setComplaints] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  const [complaintBanner, setComplaintBanner] = useState(null);
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState("dashboard");
   const [navOpen, setNavOpen] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const socketRef = useRef(null);
+  const bannerTimeoutRef = useRef(null);
+
+  const pushToast = (notification) => {
+    const toastId = `${notification._id || "toast"}-${Date.now()}`;
+    const toast = {
+      id: toastId,
+      message: notification.message,
+      createdAt: notification.createdAt || new Date().toISOString(),
+      type: notification.type || "system",
+    };
+    setToasts((prev) => [toast, ...prev].slice(0, 5));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== toastId));
+    }, 6000);
+  };
+
+  const dismissToast = (toastId) => {
+    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  };
+
+  const dismissComplaintBanner = () => {
+    setComplaintBanner(null);
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
+      bannerTimeoutRef.current = null;
+    }
+  };
+
+  const showComplaintBanner = (complaint) => {
+    const submitterId = String(complaint?.submittedBy?._id || complaint?.submittedBy || "");
+    const isOwnComplaint = submitterId && String(currentUser?._id) === submitterId;
+    if (isOwnComplaint) return;
+
+    const typeLabel = complaint?.type === "suggestion" ? "Suggestion" : "Complaint";
+    const senderName = complaint?.isAnonymous
+      ? "Anonymous user"
+      : `${complaint?.submittedBy?.firstName || ""} ${complaint?.submittedBy?.lastName || ""}`.trim() || "A user";
+
+    setComplaintBanner({
+      id: `${complaint?._id || "complaint"}-${Date.now()}`,
+      label: `New ${typeLabel} Received`,
+      message: `${senderName} sent \"${complaint?.title || "Untitled"}\".`,
+    });
+
+    if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    bannerTimeoutRef.current = setTimeout(() => {
+      setComplaintBanner(null);
+      bannerTimeoutRef.current = null;
+    }, 5000);
+  };
 
   useEffect(() => {
     initOneSignal();
@@ -48,7 +101,7 @@ export function AppProvider({ children }) {
     }
   }, [authLoading, currentUser]);
 
-  // Fetch complaints when user logs in
+  // Fetch complaints, chat messages, and missed notifications on login
   useEffect(() => {
     if (currentUser && !authLoading) {
       const token = localStorage.getItem("token");
@@ -63,11 +116,30 @@ export function AppProvider({ children }) {
       })
       .then(res => setMessages(res.data || []))
       .catch(err => console.error("Failed to fetch messages:", err));
+
+      axios.get(`${API_BASE}/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then((res) => {
+        const rows = Array.isArray(res.data) ? res.data : [];
+        setNotifications(rows);
+        rows.filter((n) => !n.read).slice(0, 3).forEach((n) => pushToast(n));
+      })
+      .catch((err) => console.error("Failed to fetch notifications:", err));
     } else if (!currentUser && !authLoading) {
       setComplaints([]);
       setMessages([]);
+      setNotifications([]);
+      setToasts([]);
+      setComplaintBanner(null);
     }
   }, [currentUser, authLoading]);
+
+  useEffect(() => {
+    return () => {
+      if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    };
+  }, []);
 
   // Fetch users if admin
   useEffect(() => {
@@ -118,6 +190,17 @@ export function AppProvider({ children }) {
         setComplaints(prev => prev.map(c => c._id === data._id ? { ...c, ...data } : c));
       });
 
+      // Listen for newly created complaints/suggestions
+      socket.on("complaint-created", (data) => {
+        console.log("🆕 Complaint created:", data._id);
+        setComplaints((prev) => {
+          const exists = prev.some((c) => String(c._id) === String(data._id));
+          if (exists) return prev;
+          return [data, ...prev];
+        });
+        showComplaintBanner(data);
+      });
+
       // Listen for user events (admins only)
       socket.on("user-added", (u) => {
         console.log("👤 New user added:", u.uniqueId);
@@ -139,6 +222,16 @@ export function AppProvider({ children }) {
         window.location.reload();
       });
 
+      // Listen for incoming notifications
+      socket.on("notification", (notification) => {
+        setNotifications((prev) => {
+          const alreadyExists = prev.some((n) => String(n._id) === String(notification._id));
+          if (alreadyExists) return prev;
+          return [notification, ...prev];
+        });
+        pushToast(notification);
+      });
+
       // Listen for new messages
       socket.on("new_message", (msg) => {
         console.log("💬 New message received:", msg);
@@ -157,19 +250,33 @@ export function AppProvider({ children }) {
     }
   }, [currentUser, authLoading]);
 
-  // Fetch users if admin
-  useEffect(() => {
-    if (currentUser && isAdminRole(currentUser.role)) {
+  const markNotificationAsRead = async (id) => {
+    try {
       const token = localStorage.getItem("token");
-      axios.get(`${API_BASE}/users`, {
+      await axios.patch(`${API_BASE}/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => setUsers(Array.isArray(res.data) ? res.data : []))
-      .catch(err => console.error("Failed to fetch users:", err));
-    } else {
-      setUsers([]);
+      });
+      setNotifications((prev) => prev.map((n) => (
+        String(n._id) === String(id) ? { ...n, read: true } : n
+      )));
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
     }
-  }, [currentUser]);
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API_BASE}/notifications/read-all`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const addComplaint = async (c) => {
     try {
@@ -274,11 +381,12 @@ export function AppProvider({ children }) {
 
   return (
     <AppCtx.Provider value={{
-      complaints, messages, users,
+      complaints, messages, notifications, unreadCount, toasts, complaintBanner, users,
       // expose setter so components can remove suspended users or apply
       // other real–time updates.
       setUsers,
       addComplaint, updateComplaint, deleteComplaint, addReply, addAdminNote, addMessage,
+      markNotificationAsRead, markAllNotificationsAsRead, dismissToast, dismissComplaintBanner,
       joinChatRoom, leaveChatRoom,
       page, setPage,
       navOpen, setNavOpen,

@@ -8,7 +8,17 @@ import { enableBrowserNotifications } from "../../utils/onesignal";
 
 export default function NavBar() {
   const { currentUser, logout } = useAuth();
-  const { setPage, page, navOpen, setNavOpen } = useApp();
+  const {
+    setPage,
+    page,
+    navOpen,
+    setNavOpen,
+    notifications,
+    unreadCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = useApp();
+  const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsBusy, setNotificationsBusy] = useState(false);
   const [notificationsMsg, setNotificationsMsg] = useState("");
   const r       = currentUser?.role;
@@ -52,6 +62,13 @@ export default function NavBar() {
       <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "8px", fontSize: 16, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
         {navOpen ? "✕" : "☰"}
       </button>
+
+      {!navOpen && unreadCount > 0 && (
+        <div style={{ marginTop: 8, textAlign: "center", color: "#FCD34D", fontSize: 11, fontWeight: 700 }}>
+          🔔 {unreadCount}
+        </div>
+      )}
+
       {navOpen && (
         <>
           <div style={{ display:"flex", flexDirection: "column", alignItems:"flex-start", gap:16 }}>
@@ -70,6 +87,69 @@ export default function NavBar() {
                   {icon} {label}
                 </button>
               ))}
+            </div>
+
+            <div style={{ width: "100%", marginTop: 4 }}>
+              <button
+                onClick={() => setShowNotifications((prev) => !prev)}
+                style={{
+                  ...S.btn,
+                  width: "100%",
+                  textAlign: "left",
+                  fontSize: 12,
+                  padding: "8px 12px",
+                  background: showNotifications ? "rgba(245,158,11,.14)" : "rgba(255,255,255,.03)",
+                  border: showNotifications ? "1px solid rgba(245,158,11,.4)" : "1px solid rgba(255,255,255,.08)",
+                  color: showNotifications ? "#FCD34D" : "rgba(255,255,255,.75)",
+                }}
+              >
+                🔔 Notifications {unreadCount > 0 ? `(${unreadCount})` : ""}
+              </button>
+
+              {showNotifications && (
+                <div style={{ marginTop: 8, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 10, padding: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,.6)" }}>Recent</span>
+                    <button
+                      onClick={markAllNotificationsAsRead}
+                      style={{ ...S.btn, fontSize: 10, padding: "4px 8px" }}
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+
+                  <div style={{ maxHeight: 230, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {notifications.slice(0, 12).map((n) => (
+                      <button
+                        key={n._id}
+                        onClick={() => !n.read && markNotificationAsRead(n._id)}
+                        style={{
+                          ...S.btn,
+                          textAlign: "left",
+                          padding: "7px 8px",
+                          borderRadius: 8,
+                          border: n.read ? "1px solid rgba(255,255,255,.08)" : "1px solid rgba(245,158,11,.35)",
+                          background: n.read ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.10)",
+                          color: "rgba(255,255,255,.86)",
+                          fontWeight: n.read ? 500 : 700,
+                          fontSize: 11,
+                        }}
+                      >
+                        <div style={{ marginBottom: 3 }}>{n.message}</div>
+                        <div style={{ fontSize: 10, color: "rgba(255,255,255,.45)" }}>
+                          {new Date(n.createdAt).toLocaleString()}
+                        </div>
+                      </button>
+                    ))}
+
+                    {notifications.length === 0 && (
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center", padding: "10px 6px" }}>
+                        No notifications yet.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

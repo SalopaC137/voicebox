@@ -3,6 +3,38 @@ const User      = require("../models/User");
 const Notification = require("../models/Notification");
 const { sendNotificationToUser } = require("../utils/onesignal");
 
+async function createUserNotification(req, userId, payload) {
+  const notification = await Notification.create({
+    userId,
+    message: payload.message,
+    complaintId: payload.complaintId || null,
+    type: payload.type || "system",
+  });
+
+  const io = req.app.locals.io;
+  if (io) {
+    io.to(`user:${userId}`).emit("notification", notification.toObject());
+  }
+
+  sendNotificationToUser(userId, payload.message)
+    .catch((err) => console.error("Failed to send OneSignal notification:", err.message));
+
+  return notification;
+}
+
+async function notifyParticipants(req, complaint, actorId, payloadBuilder) {
+  const participantIds = [complaint.submittedBy, complaint.targetLecturerId]
+    .filter(Boolean)
+    .map((id) => String(id));
+  const uniqueRecipients = [...new Set(participantIds)]
+    .filter((id) => id !== String(actorId));
+
+  await Promise.all(uniqueRecipients.map((recipientId) => {
+    const payload = payloadBuilder(recipientId);
+    return createUserNotification(req, recipientId, payload);
+  }));
+}
+
 function scopeFilter(user) {
   if (user.role === "school_admin") return { targetSchool: user.school };
   if (user.role === "dept_admin") {
@@ -66,20 +98,29 @@ exports.createComplaint = async (req, res) => {
       targetSchool, targetDept, targetLecturerId, targetLecturerUid,
     });
 
-    const submitterName = `${req.user.firstName} ${req.user.lastName}`;
-    const reportType = type === "suggestion" ? "suggestion" : "complaint";
-    const complaintMessage = `New ${reportType} from ${submitterName}: ${title}`;
+    const complaintWithRefs = await complaint.populate([
+      { path: "submittedBy", select: "firstName lastName uniqueId" },
+      { path: "targetLecturerId", select: "firstName lastName uniqueId designation" },
+    ]);
 
-    await Notification.create({
-      userId: targetLecturerId,
-      message: complaintMessage,
+    const io = req.app.locals.io;
+    if (io) {
+      // Recipient gets instant complaint card, just like instant chat/reply updates.
+      io.to(`user:${targetLecturerId}`).emit("complaint-created", complaintWithRefs.toObject());
+      if (targetSchool) io.to(`school:${targetSchool}`).emit("complaint-created", complaintWithRefs.toObject());
+      if (targetDept) io.to(`dept:${targetDept}`).emit("complaint-created", complaintWithRefs.toObject());
+    }
+
+    const entryType = type === "suggestion" ? "suggestion" : "complaint";
+    const senderName = isAnonymous ? "Anonymous user" : `${req.user.firstName} ${req.user.lastName}`;
+    const message = `New ${entryType} from ${senderName}: ${title}`;
+    createUserNotification(req, targetLecturerId, {
+      message,
       complaintId: complaint._id,
-      type: "complaint",
-    });
+      type: entryType,
+    }).catch((err) => console.error("Failed to create notification:", err.message));
 
-    await sendNotificationToUser(targetLecturerId, complaintMessage);
-
-    res.status(201).json(complaint);
+    res.status(201).json(complaintWithRefs);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -104,16 +145,12 @@ exports.updateStatus = async (req, res) => {
     c.status = req.body.status;
     await c.save();
 
-    if (String(c.submittedBy) !== String(req.user._id)) {
-      const statusMessage = `Your complaint "${c.title}" is now ${c.status}.`;
-      await Notification.create({
-        userId: c.submittedBy,
-        message: statusMessage,
-        complaintId: c._id,
-        type: "complaint",
-      });
-      await sendNotificationToUser(c.submittedBy, statusMessage);
-    }
+    // Notify the other participant(s) that status has changed.
+    notifyParticipants(req, c, req.user._id, () => ({
+      message: `Status changed: \"${c.title}\" is now ${c.status}.`,
+      complaintId: c._id,
+      type: c.type === "suggestion" ? "suggestion" : "complaint",
+    })).catch((err) => console.error("Failed to notify status change:", err.message));
     
     // Emit real-time event
     const io = req.app.locals.io;
@@ -164,17 +201,19 @@ exports.addReply = async (req, res) => {
     
     await c.save();
 
-    const replyRecipientId = isSubmitter ? c.targetLecturerId : c.submittedBy;
-    if (replyRecipientId && String(replyRecipientId) !== String(req.user._id)) {
-      const replyMessage = `New reply on complaint "${c.title}".`;
-      await Notification.create({
-        userId: replyRecipientId,
-        message: replyMessage,
-        complaintId: c._id,
-        type: "complaint",
-      });
-      await sendNotificationToUser(replyRecipientId, replyMessage);
-    }
+    const actorName = `${req.user.firstName} ${req.user.lastName}`;
+    const senderIsSubmitter = String(c.submittedBy) === String(req.user._id);
+    const senderLabel = senderIsSubmitter
+      ? "The submitter"
+      : req.user.role === "dept_admin"
+        ? `${actorName} (Department Admin)`
+        : actorName;
+
+    notifyParticipants(req, c, req.user._id, () => ({
+      message: `${senderLabel} replied on \"${c.title}\".`,
+      complaintId: c._id,
+      type: c.type === "suggestion" ? "suggestion" : "complaint",
+    })).catch((err) => console.error("Failed to notify new reply:", err.message));
     
     // Emit real-time event with full complaint data
     const io = req.app.locals.io;
