@@ -3,7 +3,7 @@ import axios from "axios";
 import io from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { isAdminRole } from "../utils/helpers";
-import { initOneSignal, syncOneSignalUser } from "../utils/onesignal";
+import { initOneSignal, syncOneSignalUser, promptOneSignalPermission, getOneSignalPlayerId } from "../utils/onesignal";
 
 const AppCtx = createContext(null);
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
@@ -79,6 +79,32 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (authLoading) return;
     syncOneSignalUser(currentUser?._id || null);
+  }, [currentUser?._id, authLoading]);
+
+  useEffect(() => {
+    if (authLoading || !currentUser?._id) return;
+
+    const saveNotificationId = async () => {
+      try {
+        await initOneSignal();
+        await promptOneSignalPermission();
+        const playerId = await getOneSignalPlayerId();
+        if (!playerId) return;
+
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        await axios.post(
+          `${API_BASE}/notifications/save-notification-id`,
+          { playerId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (error) {
+        console.error("Failed to save OneSignal notification id:", error);
+      }
+    };
+
+    saveNotificationId();
   }, [currentUser?._id, authLoading]);
 
   // Sync page state with auth state

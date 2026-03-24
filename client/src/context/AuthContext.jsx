@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { syncOneSignalUser } from "../utils/onesignal";
 
 const AuthCtx = createContext(null);
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
@@ -34,13 +35,7 @@ export function AuthProvider({ children }) {
       const res = await axios.post(`${API_BASE}/auth/login`, { email, password });
       localStorage.setItem("token", res.data.token);
       setCurrentUser(res.data.user);
-
-      const oneSignalDeferred = window.OneSignalDeferred = window.OneSignalDeferred || [];
-      oneSignalDeferred.push(async function (OneSignal) {
-        if (res.data?.user?._id) {
-          await OneSignal.login(String(res.data.user._id));
-        }
-      });
+      await syncOneSignalUser(res.data?.user?._id || null);
 
       setError(null);
       return "ok";
@@ -67,13 +62,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem("token");
 
-    const oneSignalDeferred = window.OneSignalDeferred = window.OneSignalDeferred || [];
-    oneSignalDeferred.push(async (OneSignal) => {
-      try {
-        await OneSignal.logout();
-      } catch (err) {
-        console.error("Failed to logout OneSignal user:", err);
-      }
+    syncOneSignalUser(null).catch((err) => {
+      console.error("Failed to logout OneSignal user:", err);
     });
 
     setCurrentUser(null);

@@ -1,168 +1,101 @@
+import OneSignal from "react-onesignal";
+
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
 function hasBrowserContext() {
   return typeof window !== "undefined";
 }
 
-function queueOneSignalTask(task) {
-  if (!hasBrowserContext()) return;
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(task);
-}
-
-function getWorkerConfig() {
-  return {
-    serviceWorkerParam: { scope: "/" },
-    serviceWorkerPath: "/OneSignalSDKWorker.js",
-    serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
-  };
-}
-
-async function clearStaleOneSignalBrowserState() {
-  if (!hasBrowserContext()) return;
-
-  try {
-    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
-      const key = localStorage.key(i);
-      if (key && key.toLowerCase().includes("onesignal")) {
-        localStorage.removeItem(key);
-      }
-    }
-  } catch (_error) {
-    // Ignore storage cleanup failures.
-  }
-
-  try {
-    if ("serviceWorker" in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(
-        registrations
-          .filter((reg) => {
-            const scriptURL = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || "";
-            return scriptURL.toLowerCase().includes("onesignal") || reg.scope.toLowerCase().includes("onesignal");
-          })
-          .map((reg) => reg.unregister())
-      );
-    }
-  } catch (_error) {
-    // Ignore service worker cleanup failures.
-  }
-}
-
-function shouldRetryInit(error) {
-  const msg = String(error?.message || error || "").toLowerCase();
-  return msg.includes("appid doesn't match") || msg.includes("app id doesn't match");
-}
+let initPromise = null;
 
 export function initOneSignal() {
   if (!hasBrowserContext()) return Promise.resolve(false);
-
-  if (window.__voiceboxOneSignalInitPromise) {
-    return window.__voiceboxOneSignalInitPromise;
-  }
+  if (initPromise) return initPromise;
 
   if (!ONESIGNAL_APP_ID) {
     console.warn("[OneSignal] Missing VITE_ONESIGNAL_APP_ID in client environment.");
     return Promise.resolve(false);
   }
 
-  window.__voiceboxOneSignalInitPromise = new Promise((resolve) => {
-    queueOneSignalTask(async (OneSignal) => {
-      try {
-        await OneSignal.init({
-          appId: ONESIGNAL_APP_ID,
-          notifyButton: { enable: true },
-          autoResubscribe: true,
-          allowLocalhostAsSecureOrigin: true,
-          ...getWorkerConfig(),
-        });
-        resolve(true);
-      } catch (error) {
-        if (shouldRetryInit(error)) {
-          console.warn("[OneSignal] Init failed. Clearing stale OneSignal state and retrying once...", error);
-          await clearStaleOneSignalBrowserState();
-          try {
-            await OneSignal.init({
-              appId: ONESIGNAL_APP_ID,
-              notifyButton: { enable: true },
-              autoResubscribe: true,
-              allowLocalhostAsSecureOrigin: true,
-              ...getWorkerConfig(),
-            });
-            resolve(true);
-            return;
-          } catch (retryError) {
-            console.error("[OneSignal] SDK retry initialization failed:", retryError);
-            resolve(false);
-            return;
-          }
-        }
+  initPromise = (async () => {
+    try {
+      await OneSignal.init({
+        appId: ONESIGNAL_APP_ID,
+        notifyButton: { enable: true },
+        allowLocalhostAsSecureOrigin: true,
+        autoResubscribe: true,
+        serviceWorkerParam: { scope: "/" },
+        serviceWorkerPath: "/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
+      });
+      return true;
+    } catch (error) {
+      console.error("[OneSignal] SDK initialization failed:", error);
+      return false;
+    }
+  })();
 
-        console.error("[OneSignal] SDK initialization failed:", error);
-        resolve(false);
-      }
-    });
-  });
-
-  return window.__voiceboxOneSignalInitPromise;
+  return initPromise;
 }
 
 export async function syncOneSignalUser(userId) {
   const initialized = await initOneSignal();
   if (!initialized) return false;
 
-  return new Promise((resolve) => {
-    queueOneSignalTask(async (OneSignal) => {
-      try {
-        if (!userId) {
-          await OneSignal.logout();
-          resolve(true);
-          return;
-        }
+  try {
+    if (!userId) {
+      await OneSignal.logout();
+      return true;
+    }
 
-        await OneSignal.login(String(userId));
-        resolve(true);
-      } catch (error) {
-        console.error("[OneSignal] Failed to sync user identity:", error);
-        resolve(false);
-      }
-    });
-  });
+    await OneSignal.login(String(userId));
+    return true;
+  } catch (error) {
+    console.error("[OneSignal] Failed to sync user identity:", error);
+    return false;
+  }
 }
 
-export async function enableBrowserNotifications() {
+export async function promptOneSignalPermission() {
   const initialized = await initOneSignal();
-  if (!initialized) {
-    return { enabled: false, reason: "not_initialized" };
+  if (!initialized) return false;
+
+  try {
+    if (OneSignal.Notifications?.permission === true) {
+      return true;
+    }
+
+    if (typeof OneSignal.showSlidedownPrompt === "function") {
+      await OneSignal.showSlidedownPrompt();
+    } else if (OneSignal.Slidedown?.promptPush) {
+      await OneSignal.Slidedown.promptPush();
+    } else {
+      await OneSignal.Notifications.requestPermission();
+    }
+
+    return OneSignal.Notifications?.permission === true;
+  } catch (error) {
+    console.error("[OneSignal] Failed to show permission prompt:", error);
+    return false;
   }
+}
 
-  return new Promise((resolve) => {
-    queueOneSignalTask(async (OneSignal) => {
-      try {
-        const alreadyGranted = OneSignal.Notifications?.permission === true;
-        if (alreadyGranted) {
-          if (OneSignal.User?.PushSubscription?.optIn) {
-            await OneSignal.User.PushSubscription.optIn();
-          }
-          resolve({ enabled: true, reason: "already_granted" });
-          return;
-        }
+export async function getOneSignalPlayerId() {
+  const initialized = await initOneSignal();
+  if (!initialized) return null;
 
-        await OneSignal.Notifications.requestPermission();
+  try {
+    const fromSubscription = OneSignal.User?.PushSubscription?.id;
+    if (fromSubscription) return String(fromSubscription);
 
-        if (OneSignal.Notifications?.permission === true) {
-          if (OneSignal.User?.PushSubscription?.optIn) {
-            await OneSignal.User.PushSubscription.optIn();
-          }
-          resolve({ enabled: true, reason: "granted" });
-          return;
-        }
+    if (typeof OneSignal.getUserId === "function") {
+      const legacyId = await OneSignal.getUserId();
+      if (legacyId) return String(legacyId);
+    }
 
-        resolve({ enabled: false, reason: "blocked_or_dismissed" });
-      } catch (error) {
-        console.error("[OneSignal] Failed to enable browser notifications:", error);
-        resolve({ enabled: false, reason: "error" });
-      }
-    });
-  });
+    return null;
+  } catch (error) {
+    console.error("[OneSignal] Failed to read player id:", error);
+    return null;
+  }
 }

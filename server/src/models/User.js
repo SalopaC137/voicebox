@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema(
     // Status
     isSuspended: { type: Boolean, default: false },
     isVerified:  { type: Boolean, default: false },
+    notificationId: { type: String, default: null },
     verificationToken: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },

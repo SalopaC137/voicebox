@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 
 // GET /api/notifications
 exports.getMyNotifications = async (req, res) => {
@@ -40,5 +41,20 @@ exports.markAllNotificationsAsRead = async (req, res) => {
     res.json({ message: "All notifications marked as read." });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/notifications/save-notification-id
+exports.saveNotificationId = async (req, res) => {
+  try {
+    const { playerId } = req.body || {};
+    if (!playerId || typeof playerId !== "string") {
+      return res.status(400).json({ message: "playerId is required." });
+    }
+
+    await User.findByIdAndUpdate(req.user._id, { notificationId: playerId });
+    return res.json({ message: "Saved" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };

@@ -1,4 +1,5 @@
 const axios = require("axios");
+const User = require("../models/User");
 
 const ONESIGNAL_API_URL = "https://api.onesignal.com/notifications?c=push";
 const ONESIGNAL_LEGACY_API_URL = "https://onesignal.com/api/v1/notifications";
@@ -52,6 +53,39 @@ async function sendNotificationToUser(userId, message) {
   if (!userId) {
     console.warn("[OneSignal] Skipped targeted send: missing userId");
     return { sent: false, skipped: true };
+  }
+
+  let notificationId = null;
+  try {
+    const user = await User.findById(userId).select("notificationId");
+    notificationId = user?.notificationId || null;
+  } catch (lookupError) {
+    console.warn("[OneSignal] Failed to lookup user notificationId, continuing with external_id path:", lookupError.message);
+  }
+
+  if (notificationId) {
+    try {
+      const byPlayerResponse = await axios.post(
+        ONESIGNAL_LEGACY_API_URL,
+        {
+          app_id: process.env.ONESIGNAL_APP_ID,
+          include_player_ids: [String(notificationId)],
+          headings: { en: "VoiceBox" },
+          contents: { en: message },
+        },
+        {
+          headers: {
+            Authorization: `Basic ${process.env.ONESIGNAL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { sent: true, id: byPlayerResponse.data?.id || null, via: "player-id" };
+    } catch (playerError) {
+      const playerDetails = playerError.response?.data || playerError.message;
+      console.warn("[OneSignal] include_player_ids send failed, falling back to external_id:", playerDetails);
+    }
   }
 
   try {
