@@ -30,6 +30,10 @@ function queueOneSignalTask(task) {
 
 export function initOneSignal() {
   if (!hasBrowserContext()) return Promise.resolve(false);
+  if (window.__voiceboxOneSignalInitPromise) {
+    initPromise = window.__voiceboxOneSignalInitPromise;
+    return initPromise;
+  }
   if (initPromise) return initPromise;
 
   if (!ONESIGNAL_APP_ID) {
@@ -41,6 +45,7 @@ export function initOneSignal() {
     try {
       await OneSignal.init({
         appId: ONESIGNAL_APP_ID,
+        notifyButton: { enable: true },
         allowLocalhostAsSecureOrigin: true,
       });
       return true;
