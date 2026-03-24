@@ -11,11 +11,10 @@ function queueOneSignalTask(task) {
 }
 
 function getWorkerConfig() {
-  const origin = window.location.origin;
   return {
     serviceWorkerParam: { scope: "/" },
-    serviceWorkerPath: `${origin}/OneSignalSDKWorker.js`,
-    serviceWorkerUpdaterPath: `${origin}/OneSignalSDKUpdaterWorker.js`,
+    serviceWorkerPath: "/OneSignalSDKWorker.js",
+    serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
   };
 }
 
@@ -52,12 +51,7 @@ async function clearStaleOneSignalBrowserState() {
 
 function shouldRetryInit(error) {
   const msg = String(error?.message || error || "").toLowerCase();
-  return (
-    msg.includes("appid doesn't match") ||
-    msg.includes("app id doesn't match") ||
-    msg.includes("failed to register a serviceworker") ||
-    msg.includes("scripturl")
-  );
+  return msg.includes("appid doesn't match") || msg.includes("app id doesn't match");
 }
 
 export function initOneSignal() {
