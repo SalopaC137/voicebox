@@ -30,7 +30,7 @@ export function initOneSignal() {
           serviceWorkerPath: "/OneSignalSDKWorker.js",
           serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
           allowLocalhostAsSecureOrigin: true,
-          notifyButton: { enable: false },
+          notifyButton: { enable: true },
         });
         resolve(true);
       } catch (error) {
