@@ -1,5 +1,3 @@
-import OneSignal from "react-onesignal";
-
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
 function hasBrowserContext() {
@@ -7,6 +5,28 @@ function hasBrowserContext() {
 }
 
 let initPromise = null;
+
+function getOneSignalQueue() {
+  window.OneSignal = window.OneSignal || [];
+  return window.OneSignal;
+}
+
+function queueOneSignalTask(task) {
+  if (!hasBrowserContext()) return Promise.resolve(null);
+
+  return new Promise((resolve) => {
+    const oneSignalQueue = getOneSignalQueue();
+    oneSignalQueue.push(async function (OneSignal) {
+      try {
+        const result = await task(OneSignal);
+        resolve(result);
+      } catch (error) {
+        console.error("[OneSignal] Task failed:", error);
+        resolve(null);
+      }
+    });
+  });
+}
 
 export function initOneSignal() {
   if (!hasBrowserContext()) return Promise.resolve(false);
@@ -17,23 +37,18 @@ export function initOneSignal() {
     return Promise.resolve(false);
   }
 
-  initPromise = (async () => {
+  initPromise = queueOneSignalTask(async function (OneSignal) {
     try {
       await OneSignal.init({
         appId: ONESIGNAL_APP_ID,
-        notifyButton: { enable: true },
         allowLocalhostAsSecureOrigin: true,
-        autoResubscribe: true,
-        serviceWorkerParam: { scope: "/" },
-        serviceWorkerPath: "/OneSignalSDKWorker.js",
-        serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
       });
       return true;
     } catch (error) {
       console.error("[OneSignal] SDK initialization failed:", error);
       return false;
     }
-  })();
+  });
 
   return initPromise;
 }
@@ -42,60 +57,74 @@ export async function syncOneSignalUser(userId) {
   const initialized = await initOneSignal();
   if (!initialized) return false;
 
-  try {
+  const result = await queueOneSignalTask(async function (OneSignal) {
     if (!userId) {
-      await OneSignal.logout();
+      if (typeof OneSignal.logout === "function") {
+        await OneSignal.logout();
+      } else if (typeof OneSignal.removeExternalUserId === "function") {
+        await OneSignal.removeExternalUserId();
+      }
       return true;
     }
 
-    await OneSignal.login(String(userId));
-    return true;
-  } catch (error) {
-    console.error("[OneSignal] Failed to sync user identity:", error);
+    if (typeof OneSignal.login === "function") {
+      await OneSignal.login(String(userId));
+      return true;
+    }
+
+    if (typeof OneSignal.setExternalUserId === "function") {
+      await OneSignal.setExternalUserId(String(userId));
+      return true;
+    }
+
     return false;
-  }
+  });
+
+  return result === true;
 }
 
 export async function promptOneSignalPermission() {
   const initialized = await initOneSignal();
   if (!initialized) return false;
 
-  try {
-    if (OneSignal.Notifications?.permission === true) {
-      return true;
-    }
-
+  const result = await queueOneSignalTask(async function (OneSignal) {
     if (typeof OneSignal.showSlidedownPrompt === "function") {
       await OneSignal.showSlidedownPrompt();
     } else if (OneSignal.Slidedown?.promptPush) {
       await OneSignal.Slidedown.promptPush();
-    } else {
+    } else if (OneSignal.Notifications?.requestPermission) {
       await OneSignal.Notifications.requestPermission();
     }
 
-    return OneSignal.Notifications?.permission === true;
-  } catch (error) {
-    console.error("[OneSignal] Failed to show permission prompt:", error);
+    if (typeof OneSignal.isPushNotificationsEnabled === "function") {
+      return !!(await OneSignal.isPushNotificationsEnabled());
+    }
+
+    if (OneSignal.Notifications?.permission === true) {
+      return true;
+    }
+
     return false;
-  }
+  });
+
+  return result === true;
 }
 
 export async function getOneSignalPlayerId() {
   const initialized = await initOneSignal();
   if (!initialized) return null;
 
-  try {
-    const fromSubscription = OneSignal.User?.PushSubscription?.id;
-    if (fromSubscription) return String(fromSubscription);
-
+  const result = await queueOneSignalTask(async function (OneSignal) {
     if (typeof OneSignal.getUserId === "function") {
       const legacyId = await OneSignal.getUserId();
       if (legacyId) return String(legacyId);
     }
 
+    const fromSubscription = OneSignal.User?.PushSubscription?.id;
+    if (fromSubscription) return String(fromSubscription);
+
     return null;
-  } catch (error) {
-    console.error("[OneSignal] Failed to read player id:", error);
-    return null;
-  }
+  });
+
+  return result || null;
 }
