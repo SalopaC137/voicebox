@@ -9,6 +9,7 @@ const authRoutes       = require("./routes/auth");
 const userRoutes       = require("./routes/users");
 const complaintRoutes  = require("./routes/complaints");
 const chatRoutes       = require("./routes/chat");
+const notificationRoutes = require("./routes/notifications");
 const registerSocket   = require("./utils/socket");
 const { initializeCounters } = require("./controllers/authController");
 
@@ -49,6 +50,7 @@ app.use("/api/auth",       authRoutes);
 app.use("/api/users",      userRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/chat",       chatRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok", ts: new Date() }));
 

@@ -1,5 +1,7 @@
 const Complaint = require("../models/Complaint");
 const User      = require("../models/User");
+const Notification = require("../models/Notification");
+const { sendNotificationToUser } = require("../utils/onesignal");
 
 function scopeFilter(user) {
   if (user.role === "school_admin") return { targetSchool: user.school };
@@ -64,6 +66,19 @@ exports.createComplaint = async (req, res) => {
       targetSchool, targetDept, targetLecturerId, targetLecturerUid,
     });
 
+    const submitterName = `${req.user.firstName} ${req.user.lastName}`;
+    const reportType = type === "suggestion" ? "suggestion" : "complaint";
+    const complaintMessage = `New ${reportType} from ${submitterName}: ${title}`;
+
+    await Notification.create({
+      userId: targetLecturerId,
+      message: complaintMessage,
+      complaintId: complaint._id,
+      type: "complaint",
+    });
+
+    await sendNotificationToUser(targetLecturerId, complaintMessage);
+
     res.status(201).json(complaint);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -88,6 +103,17 @@ exports.updateStatus = async (req, res) => {
 
     c.status = req.body.status;
     await c.save();
+
+    if (String(c.submittedBy) !== String(req.user._id)) {
+      const statusMessage = `Your complaint "${c.title}" is now ${c.status}.`;
+      await Notification.create({
+        userId: c.submittedBy,
+        message: statusMessage,
+        complaintId: c._id,
+        type: "complaint",
+      });
+      await sendNotificationToUser(c.submittedBy, statusMessage);
+    }
     
     // Emit real-time event
     const io = req.app.locals.io;
@@ -137,6 +163,18 @@ exports.addReply = async (req, res) => {
     c.readBy = [];
     
     await c.save();
+
+    const replyRecipientId = isSubmitter ? c.targetLecturerId : c.submittedBy;
+    if (replyRecipientId && String(replyRecipientId) !== String(req.user._id)) {
+      const replyMessage = `New reply on complaint "${c.title}".`;
+      await Notification.create({
+        userId: replyRecipientId,
+        message: replyMessage,
+        complaintId: c._id,
+        type: "complaint",
+      });
+      await sendNotificationToUser(replyRecipientId, replyMessage);
+    }
     
     // Emit real-time event with full complaint data
     const io = req.app.locals.io;

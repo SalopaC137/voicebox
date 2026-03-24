@@ -3,6 +3,7 @@ import axios from "axios";
 import io from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { isAdminRole } from "../utils/helpers";
+import { initOneSignal, syncOneSignalUser } from "../utils/onesignal";
 
 const AppCtx = createContext(null);
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
@@ -17,6 +18,15 @@ export function AppProvider({ children }) {
   const [navOpen, setNavOpen] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const socketRef = useRef(null);
+
+  useEffect(() => {
+    initOneSignal();
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+    syncOneSignalUser(currentUser?._id || null);
+  }, [currentUser?._id, authLoading]);
 
   // Sync page state with auth state
   useEffect(() => {
