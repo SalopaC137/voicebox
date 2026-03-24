@@ -64,10 +64,12 @@ export function initOneSignal() {
       try {
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
+          notifyButton: { enable: true },
+          serviceWorkerParam: { scope: "/" },
           serviceWorkerPath: "/OneSignalSDKWorker.js",
           serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
+          autoResubscribe: true,
           allowLocalhostAsSecureOrigin: true,
-          notifyButton: { enable: true },
         });
         resolve(true);
       } catch (error) {
@@ -77,10 +79,12 @@ export function initOneSignal() {
           try {
             await OneSignal.init({
               appId: ONESIGNAL_APP_ID,
+              notifyButton: { enable: true },
+              serviceWorkerParam: { scope: "/" },
               serviceWorkerPath: "/OneSignalSDKWorker.js",
               serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
+              autoResubscribe: true,
               allowLocalhostAsSecureOrigin: true,
-              notifyButton: { enable: true },
             });
             resolve(true);
             return;
