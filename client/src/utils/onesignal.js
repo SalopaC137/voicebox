@@ -1,4 +1,5 @@
-const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
+// OneSignal is now initialized in index.html
+// This module handles user identity sync only
 
 function hasBrowserContext() {
   return typeof window !== "undefined";
@@ -10,98 +11,9 @@ function queueOneSignalTask(task) {
   window.OneSignalDeferred.push(task);
 }
 
-async function clearStaleOneSignalBrowserState() {
-  if (!hasBrowserContext()) return;
-
-  try {
-    // Remove OneSignal-like local storage entries from old app registrations.
-    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
-      const key = localStorage.key(i);
-      if (key && key.toLowerCase().includes("onesignal")) {
-        localStorage.removeItem(key);
-      }
-    }
-  } catch (_error) {
-    // Ignore storage cleanup failures.
-  }
-
-  try {
-    if ("serviceWorker" in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(
-        registrations
-          .filter((reg) => {
-            const scriptURL = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || "";
-            return scriptURL.includes("OneSignal") || scriptURL.includes("onesignal") || reg.scope.includes("OneSignal");
-          })
-          .map((reg) => reg.unregister())
-      );
-    }
-  } catch (_error) {
-    // Ignore service worker cleanup failures.
-  }
-}
-
-function isAppIdMismatchError(error) {
-  const msg = String(error?.message || error || "").toLowerCase();
-  return msg.includes("appid doesn't match") || msg.includes("app id doesn't match");
-}
-
 export function initOneSignal() {
-  if (!hasBrowserContext()) return Promise.resolve(false);
-
-  if (window.__voiceboxOneSignalInitPromise) {
-    return window.__voiceboxOneSignalInitPromise;
-  }
-
-  if (!ONESIGNAL_APP_ID) {
-    console.warn("[OneSignal] Missing VITE_ONESIGNAL_APP_ID in client environment.");
-    return Promise.resolve(false);
-  }
-
-  window.__voiceboxOneSignalInitPromise = new Promise((resolve) => {
-    queueOneSignalTask(async (OneSignal) => {
-      try {
-        await OneSignal.init({
-          appId: ONESIGNAL_APP_ID,
-          notifyButton: { enable: true },
-          serviceWorkerParam: { scope: "/" },
-          serviceWorkerPath: "/OneSignalSDKWorker.js",
-          serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
-          autoResubscribe: true,
-          allowLocalhostAsSecureOrigin: true,
-        });
-        resolve(true);
-      } catch (error) {
-        if (isAppIdMismatchError(error)) {
-          console.warn("[OneSignal] Detected stale OneSignal app state. Clearing and retrying init once...");
-          await clearStaleOneSignalBrowserState();
-          try {
-            await OneSignal.init({
-              appId: ONESIGNAL_APP_ID,
-              notifyButton: { enable: true },
-              serviceWorkerParam: { scope: "/" },
-              serviceWorkerPath: "/OneSignalSDKWorker.js",
-              serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
-              autoResubscribe: true,
-              allowLocalhostAsSecureOrigin: true,
-            });
-            resolve(true);
-            return;
-          } catch (retryError) {
-            console.error("[OneSignal] SDK retry initialization failed:", retryError);
-            resolve(false);
-            return;
-          }
-        }
-
-        console.error("[OneSignal] SDK initialization failed:", error);
-        resolve(false);
-      }
-    });
-  });
-
-  return window.__voiceboxOneSignalInitPromise;
+  // Initialization now happens in index.html
+  return Promise.resolve(true);
 }
 
 export async function syncOneSignalUser(userId) {
