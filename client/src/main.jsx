@@ -7,15 +7,23 @@ const oneSignalAppId = import.meta.env.VITE_ONESIGNAL_APP_ID;
 if (oneSignalAppId && typeof window !== 'undefined') {
   window.OneSignal = window.OneSignal || [];
   window.__voiceboxOneSignalInitPromise = new Promise((resolve) => {
-    window.OneSignal.push(async function () {
+    const OneSignal = window.OneSignal;
+    OneSignal.push(async function () {
       try {
-        await window.OneSignal.init({
+        await OneSignal.init({
           appId: oneSignalAppId,
           notifyButton: {
             enable: true,
           },
           allowLocalhostAsSecureOrigin: true,
         });
+
+        if (OneSignal.Notifications?.on) {
+          OneSignal.Notifications.on('permissionChange', function (permission) {
+            console.log('Permission changed:', permission);
+          });
+        }
+
         resolve(true);
       } catch (error) {
         console.error('[OneSignal] SDK initialization failed:', error);
