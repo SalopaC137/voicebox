@@ -65,20 +65,41 @@ function allowedRooms(user) {
   const { role, school, department } = user;
   const { SCHOOLS } = require("../utils/constants");
 
-  // build a list of course room ids for a given department object
-  // if year is provided (for students), append Y{year} to course room IDs
-  const courseRoomsFor = (d, year = null) => {
-    if (!d || !Array.isArray(d.courses)) return [];
-    return d.courses.map(c => {
-      const baseRoom = `course:${d.code}:${c.code}`;
-      // Append year suffix for students with year of study
+  const COURSE_CODE_ALIASES = {
+    CIN: {
+      IT: ["ICT"],
+      ICT: ["IT"],
+    },
+  };
+
+  const normalize = (v) => String(v || "").trim().toUpperCase();
+
+  const expandCourseCodes = (deptCode, courseCode) => {
+    const d = normalize(deptCode);
+    const c = normalize(courseCode);
+    if (!c) return [];
+    const aliases = COURSE_CODE_ALIASES[d]?.[c] || [];
+    return Array.from(new Set([c, ...aliases.map(normalize)]));
+  };
+
+  const toCourseRoomIds = (deptCode, courseCode, year = null) => {
+    const d = normalize(deptCode);
+    return expandCourseCodes(d, courseCode).map((c) => {
+      const baseRoom = `course:${d}:${c}`;
       return year ? `${baseRoom}:Y${year}` : baseRoom;
     });
   };
 
+  // build a list of course room ids for a given department object
+  // if year is provided (for students), append Y{year} to course room IDs
+  const courseRoomsFor = (d, year = null) => {
+    if (!d || !Array.isArray(d.courses)) return [];
+    return d.courses.flatMap((c) => toCourseRoomIds(d.code, c.code, year));
+  };
+
   if (role === "school_admin") {
     const schoolDepts = SCHOOLS.find(s => s.code === school)?.departments || [];
-    let rooms = [
+    const rooms = [
       `school:${school}`,
       ...schoolDepts.map(d => `dept:${d.code}`),
     ];
@@ -87,7 +108,7 @@ function allowedRooms(user) {
       rooms.push(...courseRoomsFor(d)); // base rooms
       [1,2,3,4].forEach(y => rooms.push(...courseRoomsFor(d, y))); // year-specific rooms
     });
-    return rooms;
+    return Array.from(new Set(rooms));
   }
   if (role === "dept_admin") {
     const rooms = [`dept:${department}`, `school:${school}`];
@@ -97,35 +118,51 @@ function allowedRooms(user) {
       rooms.push(...courseRoomsFor(myDept)); // base
       [1,2,3,4].forEach(y => rooms.push(...courseRoomsFor(myDept, y))); // year variants
     }
-    return rooms;
+    return Array.from(new Set(rooms));
   }
   if (role === "staff" || role === "student") {
     const rooms = [`dept:${department}`];
-    // if the user has an explicit course list, only include those; otherwise
-    // fall back to all courses in the department.
-    if (Array.isArray(user.courses) && user.courses.length > 0) {
-      user.courses.forEach(c => {
-        // course entries are expected to be stored with dept prefix
-        // For students, append year suffix to limit to their year cohort
-        const room = role === "student" && user.yearOfStudy
-          ? `course:${c}:Y${user.yearOfStudy}`
-          : `course:${c}`;
-        rooms.push(room);
-      });
-    } else {
-      const allDepts = SCHOOLS.flatMap(s => s.departments || []);
-      const myDept = allDepts.find(d => d.code === department);
-      if (myDept) {
-        // For students, only their year; for staff, base + all year variants
-        if (role === "student" && user.yearOfStudy) {
-          rooms.push(...courseRoomsFor(myDept, user.yearOfStudy));
-        } else if (role === "staff") {
-          rooms.push(...courseRoomsFor(myDept)); // base
-          [1,2,3,4].forEach(y => rooms.push(...courseRoomsFor(myDept, y))); // year variants
-        }
+    const allDepts = SCHOOLS.flatMap(s => s.departments || []);
+    const myDept = allDepts.find(d => d.code === department);
+
+    // Always include department-defined course rooms to avoid partial access
+    // when stale user.courses values exist.
+    if (myDept) {
+      if (role === "student" && user.yearOfStudy) {
+        rooms.push(...courseRoomsFor(myDept, user.yearOfStudy));
+      } else if (role === "staff") {
+        rooms.push(...courseRoomsFor(myDept));
+        [1,2,3,4].forEach(y => rooms.push(...courseRoomsFor(myDept, y)));
       }
     }
-    return rooms;
+
+    // Include explicitly assigned courses as an additive source and normalize
+    // legacy values (e.g. CIN:IT vs CIN:ICT).
+    if (Array.isArray(user.courses) && user.courses.length > 0) {
+      user.courses.forEach((entry) => {
+        const parts = String(entry || "").split(":").map(normalize);
+        let deptCode = normalize(department);
+        let courseCode = "";
+
+        if (parts.length >= 2) {
+          deptCode = parts[0] || deptCode;
+          courseCode = parts[1] || "";
+        } else {
+          courseCode = parts[0] || "";
+        }
+
+        if (!courseCode) return;
+
+        if (role === "student" && user.yearOfStudy) {
+          rooms.push(...toCourseRoomIds(deptCode, courseCode, user.yearOfStudy));
+        } else {
+          rooms.push(...toCourseRoomIds(deptCode, courseCode));
+          [1,2,3,4].forEach(y => rooms.push(...toCourseRoomIds(deptCode, courseCode, y)));
+        }
+      });
+    }
+
+    return Array.from(new Set(rooms));
   }
   return [];
 }

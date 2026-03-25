@@ -1,22 +1,23 @@
 // University structure constants — shared by server utils
 const SCHOOLS = [
   { code:"SAT", name:"Science & Applied Technology", departments:[
-    {code:"BBS", courses:[{code:"BIO"},{code:"MLS"},{code:"HAM"}]},
-    {code:"CHB", courses:[{code:"CHEM"},{code:"BIOC"},{code:"INDCHEM"}]},
-    {code:"MTH", courses:[{code:"MATH"},{code:"MATHSTAT"},{code:"PURENM"}]},
-    {code:"CIN", courses:[{code:"CS"},{code:"IT"},{code:"SE"},{code:"IS"}]},
-    {code:"EAS", courses:[{code:"GEO"},{code:"ENV"},{code:"AGS"}]},
+    {code:"BBS", courses:[{code:"BIOMED"},{code:"BIOGEN"}]},
+    {code:"CHB", courses:[{code:"BIOCHEM"},{code:"CHEMGEN"}]},
+    {code:"MTH", courses:[{code:"STAT"},{code:"MATHGEN"}]},
+    {code:"CIN", courses:[{code:"CS"},{code:"ICT"}]},
+    {code:"EAS", courses:[{code:"GEO"},{code:"ENV"},{code:"NRM"},{code:"USAL"}]},
   ]},
   { code:"EDU", name:"Education", departments:[
-    {code:"CEM", courses:[{code:"CEM01"},{code:"EDM"},{code:"TEACHMATH"},{code:"SCIENCED"}]},
-    {code:"AGE", courses:[{code:"AGR"},{code:"AGTECH"}]},
+    {code:"CEM", courses:[{code:"BEDARTS"},{code:"BEDSCI"},{code:"BEDECDE"},{code:"BSCAGRED"}]},
+    {code:"PCEF", courses:[{code:"DIPEDARTS"}]},
   ]},
   { code:"HDS", name:"Humanities & Development Studies", departments:[
-    {code:"LCS", courses:[{code:"ENG"},{code:"COM"},{code:"KISWAHILI"}]},
-    {code:"SST", courses:[{code:"HIST"},{code:"GEO"},{code:"POL"},{code:"SOCIO"}]},
+    {code:"LCS", courses:[{code:"BACOMMED"},{code:"BACOMENG"},{code:"BAKISCOM"},{code:"BLIS"}]},
+    {code:"SST", courses:[{code:"BACRIM"},{code:"BAPEACE"},{code:"BSCDEV"},{code:"BAHISTECON"},{code:"BAECONSOC"},{code:"BPSYCH"}]},
   ]},
   { code:"SBE", name:"Business & Economics", departments:[
-    {code:"LGB", courses:[{code:"ACC"},{code:"FIN"},{code:"MARKETING"},{code:"HRM"},{code:"LOGISTICS"}]},
+    {code:"COM", courses:[{code:"BCOM"},{code:"BAGRI"}]},
+    {code:"ECON", courses:[{code:"BSCECONSTAT"},{code:"BSCAGRECON"}]},
   ]},
 ];
 
