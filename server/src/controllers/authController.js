@@ -1,5 +1,6 @@
 const jwt  = require("jsonwebtoken");
 const crypto = require("crypto");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const { sendVerificationEmail } = require("../utils/sendEmail");
 const { sendResetEmail } = require("../utils/sendResetEmail");
