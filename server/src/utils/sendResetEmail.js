@@ -1,11 +1,25 @@
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend = null;
+
+function getResendClient() {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 const sendResetEmail = async (email, link) => {
+  const resendClient = getResendClient();
+  if (!resendClient) {
+    console.warn("[Email] Skipping reset email: RESEND_API_KEY is not set.");
+    return;
+  }
+
   console.log("Sending reset email to:", email, "with link:", link);
 
-  await resend.emails.send({
+  await resendClient.emails.send({
     from: "VoiceBox <noreply@voicebox.qzz.io>",
     to: email,
     subject: "Reset your password",

@@ -64,6 +64,11 @@ app.get("/api/health", (_req, res) => res.json({ status: "ok", ts: new Date() })
 registerSocket(io);
 
 // ── Database + Listen ────────────────────────────────────────
+if (!process.env.MONGO_URI) {
+  console.error("❌  MONGO_URI is not set. Add it in Render environment variables before starting the server.");
+  process.exit(1);
+}
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
