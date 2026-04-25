@@ -65,6 +65,30 @@ async function sendNotificationToUser(userId, message) {
 
   if (notificationId) {
     try {
+      const bySubscriptionResponse = await axios.post(
+        ONESIGNAL_API_URL,
+        {
+          app_id: process.env.ONESIGNAL_APP_ID,
+          include_subscription_ids: [String(notificationId)],
+          target_channel: "push",
+          headings: { en: "VoiceBox" },
+          contents: { en: message },
+        },
+        {
+          headers: {
+            Authorization: `Key ${process.env.ONESIGNAL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { sent: true, id: bySubscriptionResponse.data?.id || null, via: "subscription-id" };
+    } catch (subscriptionError) {
+      const subscriptionDetails = subscriptionError.response?.data || subscriptionError.message;
+      console.warn("[OneSignal] include_subscription_ids send failed, trying legacy player-id path:", subscriptionDetails);
+    }
+
+    try {
       const byPlayerResponse = await axios.post(
         ONESIGNAL_LEGACY_API_URL,
         {
