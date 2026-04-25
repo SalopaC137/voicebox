@@ -13,6 +13,8 @@ const notificationRoutes = require("./routes/notifications");
 const registerSocket   = require("./utils/socket");
 const { initializeCounters } = require("./controllers/authController");
 
+mongoose.set("bufferCommands", false);
+
 const missingOneSignalConfig = ["ONESIGNAL_APP_ID", "ONESIGNAL_API_KEY"]
   .filter((key) => !process.env[key]);
 if (missingOneSignalConfig.length > 0) {
@@ -71,18 +73,27 @@ if (!process.env.MONGO_URI) {
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
-
 async function connectToMongo() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 30000,
+    });
     console.log("✅  MongoDB connected");
     await initializeCounters();
+    return true;
   } catch (err) {
     console.error("❌  MongoDB connection error:", err);
-    console.warn("[Startup] Retrying MongoDB connection in 15 seconds...");
-    setTimeout(connectToMongo, 15000);
+    return false;
   }
 }
 
-connectToMongo();
+async function bootstrap() {
+  while (!(await connectToMongo())) {
+    console.warn("[Startup] Retrying MongoDB connection in 5 seconds...");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
+
+  server.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
+}
+
+bootstrap();
