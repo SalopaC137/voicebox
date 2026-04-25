@@ -88,20 +88,13 @@ async function connectToMongo() {
     });
     console.log("✅  MongoDB connected");
     await initializeCounters();
-    return true;
   } catch (err) {
     console.error("❌  MongoDB connection error:", err);
-    return false;
+    console.warn("[Startup] Retrying MongoDB connection in 15 seconds...");
+    setTimeout(connectToMongo, 15000);
   }
 }
 
-async function bootstrap() {
-  while (!(await connectToMongo())) {
-    console.warn("[Startup] Retrying MongoDB connection in 5 seconds...");
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  }
+server.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
 
-  server.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
-}
-
-bootstrap();
+connectToMongo();
