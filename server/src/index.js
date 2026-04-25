@@ -15,6 +15,19 @@ const { initializeCounters } = require("./controllers/authController");
 
 mongoose.set("bufferCommands", false);
 
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "https://voicebox-coral.vercel.app",
+  "https://voicebox.qzz.io",
+  "https://www.voicebox.qzz.io",
+  "https://voicebox-git-main-salopac137s-projects.vercel.app",
+  "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app",
+]);
+
+function isAllowedOrigin(origin) {
+  return allowedOrigins.has(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+}
+
 const missingOneSignalConfig = ["ONESIGNAL_APP_ID", "ONESIGNAL_API_KEY"]
   .filter((key) => !process.env[key]);
 if (missingOneSignalConfig.length > 0) {
@@ -25,13 +38,10 @@ const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
   cors: {
-    origin: [
-      "https://voicebox-coral.vercel.app",
-      "https://voicebox-git-main-salopac137s-projects.vercel.app",
-      "https://voicebox-mnisk2e7e-salopac137s-projects.vercel.app",
-      "https://voicebox.qzz.io",
-      "http://localhost:5173"
-    ],
+    origin: (origin, callback) => {
+      if (!origin || isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error(`CORS not allowed for origin: ${origin}`));
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -42,12 +52,10 @@ app.locals.io = io;
 
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://voicebox-coral.vercel.app",
-    "https://voicebox.qzz.io",
-    /\.vercel\.app$/
-  ],
+  origin: (origin, callback) => {
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
+    return callback(new Error(`CORS not allowed for origin: ${origin}`));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));

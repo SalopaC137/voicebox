@@ -184,6 +184,11 @@ export function AppProvider({ children }) {
   // Socket.io real-time updates
   useEffect(() => {
     if (currentUser && !authLoading) {
+      if (!SOCKET_URL || SOCKET_URL === "undefined") {
+        console.warn("Socket disabled: VITE_SERVER_URL is missing.");
+        return;
+      }
+
       const token = localStorage.getItem("token");
       const socket = io(SOCKET_URL, {
         auth: { token },

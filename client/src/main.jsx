@@ -18,7 +18,7 @@ if (oneSignalAppId && typeof window !== 'undefined') {
           allowLocalhostAsSecureOrigin: true,
         });
 
-        if (OneSignal.Notifications?.on) {
+        if (OneSignal?.Notifications && typeof OneSignal.Notifications.on === 'function') {
           OneSignal.Notifications.on('permissionChange', function (permission) {
             console.log('Permission changed:', permission);
           });

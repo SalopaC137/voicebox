@@ -42,6 +42,10 @@ function genUID(role, school, dept) {
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
 
+function isDbReady() {
+  return mongoose.connection.readyState === 1;
+}
+
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
@@ -131,6 +135,10 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email and password required." });
 
+    if (!isDbReady()) {
+      return res.status(503).json({ message: "Database not ready. Please try again." });
+    }
+
     const user = await User.findOne({ email }).select("+password");
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: "Invalid email or password." });
@@ -174,6 +182,11 @@ exports.verifyEmail = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!isDbReady()) {
+      return res.status(503).json({ message: "Database not ready. Please try again." });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
