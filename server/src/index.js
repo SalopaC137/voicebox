@@ -69,12 +69,20 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(async () => {
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => console.log(`🚀  Server running on http://localhost:${PORT}`));
+
+async function connectToMongo() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅  MongoDB connected");
     await initializeCounters();
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => console.log(`🚀  Server running on http://localhost:${PORT}`));
-  })
-  .catch((err) => { console.error("❌  MongoDB connection error:", err); process.exit(1); });
+  } catch (err) {
+    console.error("❌  MongoDB connection error:", err);
+    console.warn("[Startup] Retrying MongoDB connection in 15 seconds...");
+    setTimeout(connectToMongo, 15000);
+  }
+}
+
+connectToMongo();
