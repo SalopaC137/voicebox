@@ -3,6 +3,11 @@ const User      = require("../models/User");
 const Notification = require("../models/Notification");
 const { sendNotificationToUser } = require("../utils/onesignal");
 
+function normalizeComplaintStatus(status) {
+  const value = String(status || "").trim().toLowerCase().replace(/\s+/g, "-");
+  return value === "inprogress" ? "in-progress" : value;
+}
+
 async function createUserNotification(req, userId, payload) {
   const notification = await Notification.create({
     userId,
@@ -95,44 +100,33 @@ exports.getCumulativeReport = async (req, res) => {
         ? { targetSchool: user.school }
         : { targetSchool: user.school, targetDept: user.department };
 
-    const [statusRows, typeRows, priorityRows, categoryRows, monthlyRows] = await Promise.all([
-      Complaint.aggregate([
-        { $match: scopeMatch },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]),
-      Complaint.aggregate([
-        { $match: scopeMatch },
-        { $group: { _id: "$type", count: { $sum: 1 } } },
-      ]),
-      Complaint.aggregate([
-        { $match: scopeMatch },
-        { $group: { _id: "$priority", count: { $sum: 1 } } },
-      ]),
-      Complaint.aggregate([
-        { $match: scopeMatch },
-        { $group: { _id: "$category", count: { $sum: 1 } } },
-      ]),
-      Complaint.aggregate([
-        { $match: scopeMatch },
-        {
-          $group: {
-            _id: {
-              year: { $year: "$createdAt" },
-              month: { $month: "$createdAt" },
-            },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { "_id.year": 1, "_id.month": 1 } },
-      ]),
-    ]);
+    const complaints = await Complaint.find(scopeMatch).select("status type priority category createdAt");
 
     const status = { open: 0, "in-progress": 0, resolved: 0 };
-    statusRows.forEach((row) => {
-      if (row && row._id in status) status[row._id] = row.count;
+    const byType = {};
+    const byPriority = {};
+    const byCategory = {};
+    const monthly = {};
+
+    complaints.forEach((complaint) => {
+      const normalizedStatus = normalizeComplaintStatus(complaint.status);
+      if (normalizedStatus in status) status[normalizedStatus] += 1;
+
+      const typeKey = complaint.type || "unknown";
+      const priorityKey = complaint.priority || "unknown";
+      const categoryKey = complaint.category || "unknown";
+      byType[typeKey] = (byType[typeKey] || 0) + 1;
+      byPriority[priorityKey] = (byPriority[priorityKey] || 0) + 1;
+      byCategory[categoryKey] = (byCategory[categoryKey] || 0) + 1;
+
+      if (complaint.createdAt) {
+        const date = new Date(complaint.createdAt);
+        const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        monthly[key] = (monthly[key] || 0) + 1;
+      }
     });
 
-    const total = status.open + status["in-progress"] + status.resolved;
+    const total = complaints.length;
     const resolutionRate = total > 0 ? Math.round((status.resolved / total) * 100) : 0;
 
     res.json({
@@ -149,15 +143,14 @@ exports.getCumulativeReport = async (req, res) => {
         resolutionRate,
       },
       breakdowns: {
-        byType: typeRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
-        byPriority: priorityRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
-        byCategory: categoryRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
+        byType: Object.entries(byType).map(([key, count]) => ({ key, count })),
+        byPriority: Object.entries(byPriority).map(([key, count]) => ({ key, count })),
+        byCategory: Object.entries(byCategory).map(([key, count]) => ({ key, count })),
       },
-      monthlyTrend: monthlyRows.map((row) => ({
-        year: row._id.year,
-        month: row._id.month,
-        count: row.count,
-      })),
+      monthlyTrend: Object.entries(monthly).map(([key, count]) => {
+        const [year, month] = key.split("-").map(Number);
+        return { year, month, count };
+      }),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -230,7 +223,7 @@ exports.updateStatus = async (req, res) => {
     const c = await Complaint.findById(req.params.id);
     if (!c) return res.status(404).json({ message: "Complaint not found." });
 
-    const requestedStatus = req.body.status;
+    const requestedStatus = normalizeComplaintStatus(req.body.status);
     const validStatuses = ["open", "in-progress", "resolved"];
     if (!validStatuses.includes(requestedStatus)) {
       return res.status(400).json({ message: "Invalid status value." });
@@ -238,6 +231,7 @@ exports.updateStatus = async (req, res) => {
 
     const u = req.user;
     const isSubmitter = String(c.submittedBy) === String(u._id);
+    const currentStatus = normalizeComplaintStatus(c.status);
     const canModerate =
       (u.role === "school_admin" && c.targetSchool === u.school) ||
       (u.role === "dept_admin"   && c.targetDept   === u.department) ||
@@ -254,11 +248,11 @@ exports.updateStatus = async (req, res) => {
         const senderId = String(reply.senderId || "");
         return senderId === String(c.targetLecturerId) || reply.senderRole === "dept_admin";
       });
-      const canResolveNow = c.status === "in-progress" || (c.status === "open" && hasReceiverReply);
+      const canResolveNow = currentStatus === "in-progress" || (currentStatus === "open" && hasReceiverReply);
       if (!canResolveNow) {
         return res.status(400).json({ message: "Complaint can only be resolved after it is in progress." });
       }
-      if (c.status === "open" && hasReceiverReply) {
+      if (currentStatus === "open" && hasReceiverReply) {
         c.status = "in-progress";
       }
     }
@@ -318,7 +312,7 @@ exports.addReply = async (req, res) => {
       return senderId === String(c.targetLecturerId) || senderRole === "dept_admin";
     });
 
-    if (c.status === "open" && senderIsReceiver && !hadReceiverReplyBefore) {
+    if (normalizeComplaintStatus(c.status) === "open" && senderIsReceiver && !hadReceiverReplyBefore) {
       c.status = "in-progress";
     }
     

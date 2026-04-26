@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
-import { statusBadge, fmtDate, getDeptName, isAdminRole, roleIcon } from "../../utils/helpers";
+import { statusBadge, fmtDate, getDeptName, isAdminRole, roleIcon, normalizeComplaintStatus } from "../../utils/helpers";
 import { ROLE_LABELS } from "../../data/university";
 
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
@@ -29,9 +29,10 @@ export default function ComplaintRow({ c }) {
   const [expanded,  setExpanded]  = useState(false);
   const [replyTxt,  setReplyTxt]  = useState("");
 
-  const statusAction = c.status === "open" && canMod
+  const currentStatus = normalizeComplaintStatus(c.status);
+  const statusAction = currentStatus === "open" && canMod
     ? { label: "→ Progress", next: "in-progress" }
-    : c.status === "in-progress" && isSubmitter
+    : currentStatus === "in-progress" && isSubmitter
       ? { label: "→ Resolved", next: "resolved" }
       : null;
 
@@ -183,7 +184,7 @@ export default function ComplaintRow({ c }) {
           )}
 
           {/* Reply box (staff / dept_admin who is the target, OR student who submitted) */}
-          {canReply && c.status !== "resolved" && (
+          {canReply && currentStatus !== "resolved" && (
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:"rgba(59,130,246,.5)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>
                 {isTarget ? "Reply to Sender" : "Reply to Staff"}

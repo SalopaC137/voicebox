@@ -1,7 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { useApp }  from "../context/AppContext";
 import S from "../utils/styles";
-import { scopeComplaints, getDeptName, getSchoolName, isAdminRole } from "../utils/helpers";
+import { scopeComplaints, getDeptName, getSchoolName, isAdminRole, normalizeComplaintStatus } from "../utils/helpers";
 import { ROLE_LABELS } from "../data/university";
 import ComplaintRow from "../components/complaint/ComplaintRow";
 import { useState, useEffect } from "react";
@@ -36,9 +36,9 @@ export default function Dashboard() {
   const allVisible = [...new Map([...mine,...personal].map(c=>[c._id,c])).values()];
   const filtered = typeFilter === "all" ? allVisible : allVisible.filter(c => c.type === typeFilter);
 
-  const open     = allVisible.filter(c => c.status==="open").length;
-  const inProg   = allVisible.filter(c => c.status==="in-progress").length;
-  const resolved = allVisible.filter(c => c.status==="resolved").length;
+  const open     = allVisible.filter(c => normalizeComplaintStatus(c.status)==="open").length;
+  const inProg   = allVisible.filter(c => normalizeComplaintStatus(c.status)==="in-progress").length;
+  const resolved = allVisible.filter(c => normalizeComplaintStatus(c.status)==="resolved").length;
 
   const scopeLabel =
     r==="school_admin" ? `School of ${getSchoolName(currentUser.school)}` :

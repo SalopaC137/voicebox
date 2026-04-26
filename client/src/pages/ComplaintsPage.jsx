@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useApp }  from "../context/AppContext";
 import S from "../utils/styles";
 import ComplaintRow from "../components/complaint/ComplaintRow";
+import { normalizeComplaintStatus } from "../utils/helpers";
 
 export default function ComplaintsPage() {
   const { currentUser }         = useAuth();
@@ -26,7 +27,7 @@ export default function ComplaintsPage() {
   const [filter, setFilter] = useState("all");
   const mine = tab === "personal" ? personal : tab === "dept" ? deptwide : isDeptAdmin ? [...personal, ...deptwide] : personal;
   const byType = type === "all" ? mine : mine.filter(c => c.type === type);
-  const filtered = filter === "all" ? byType : byType.filter(c => c.status === filter);
+  const filtered = filter === "all" ? byType : byType.filter(c => normalizeComplaintStatus(c.status) === filter);
 
   useEffect(() => {
     if (selectedComplaintId) {

@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import axios from "axios";
 import S from "../../utils/styles";
-import { scopeComplaints, getDeptName, getSchoolName, fmtDate } from "../../utils/helpers";
+import { scopeComplaints, getDeptName, getSchoolName, fmtDate, normalizeComplaintStatus } from "../../utils/helpers";
 import { SCHOOLS } from "../../data/university";
 import ComplaintRow from "../complaint/ComplaintRow";
 
@@ -50,16 +50,16 @@ export default function AdminComplaints() {
 
   const filtered = visible.filter(c => {
     const ms = !search || (c.title+c.category+(c.targetLecturerUid||"")+(c.targetDept||"")).toLowerCase().includes(search.toLowerCase());
-    const ms2 = statusFilter==="all" || c.status===statusFilter;
+    const ms2 = statusFilter==="all" || normalizeComplaintStatus(c.status)===statusFilter;
     const md  = deptFilter==="all"   || c.targetDept===deptFilter;
     return ms && ms2 && md;
   });
 
   // Report stats (prefer backend cumulative report when available)
   const total    = reportData?.totals?.total ?? visible.length;
-  const resolved = reportData?.totals?.resolved ?? visible.filter(c=>c.status==="resolved").length;
-  const open     = reportData?.totals?.open ?? visible.filter(c=>c.status==="open").length;
-  const inProg   = reportData?.totals?.inProgress ?? visible.filter(c=>c.status==="in-progress").length;
+  const resolved = reportData?.totals?.resolved ?? visible.filter(c=>normalizeComplaintStatus(c.status)==="resolved").length;
+  const open     = reportData?.totals?.open ?? visible.filter(c=>normalizeComplaintStatus(c.status)==="open").length;
+  const inProg   = reportData?.totals?.inProgress ?? visible.filter(c=>normalizeComplaintStatus(c.status)==="in-progress").length;
   const resolRate= reportData?.totals?.resolutionRate ?? (total ? Math.round((resolved/total)*100) : 0);
   const byCatRaw = reportData?.breakdowns?.byCategory || null;
   const byPriRaw = reportData?.breakdowns?.byPriority || null;

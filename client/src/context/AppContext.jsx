@@ -27,13 +27,13 @@ export function AppProvider({ children }) {
   const markNotificationAsRead = async (id) => {
     try {
       if (!id) return;
+      setNotifications((prev) => prev.map((n) => (
+        String(n._id) === String(id) ? { ...n, read: true } : n
+      )));
       const token = localStorage.getItem("token");
       await axios.patch(`${API_BASE}/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications((prev) => prev.map((n) => (
-        String(n._id) === String(id) ? { ...n, read: true } : n
-      )));
     } catch (err) {
       console.error("Failed to mark notification as read:", err);
     }
@@ -190,13 +190,12 @@ export function AppProvider({ children }) {
       axios.get(`${API_BASE}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then((res) => {
+      .then(async (res) => {
         const rows = Array.isArray(res.data) ? res.data : [];
-        setNotifications(rows);
         const unreadRows = rows.filter((n) => !n.read);
-        unreadRows.slice(0, 3).forEach((n) => pushToast(n));
+        setNotifications(rows.map((n) => ({ ...n, read: true })));
         if (unreadRows.length > 0) {
-          markNotificationsAsRead(unreadRows.map((n) => n._id));
+          await markAllNotificationsAsRead();
         }
       })
       .catch((err) => console.error("Failed to fetch notifications:", err));

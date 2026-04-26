@@ -14,8 +14,16 @@ export const getSchoolName = code => SCHOOLS.find(s => s.code === code)?.name ||
 export const fmtDate = d =>
   new Date(d).toLocaleDateString("en-KE", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
 
-export const statusBadge = s =>
-  s === "open" ? S.badgeOpen : s === "in-progress" ? S.badgeProg : S.badgeRes;
+export const normalizeComplaintStatus = (status) => {
+  const value = String(status || "").trim().toLowerCase().replace(/\s+/g, "-");
+  if (value === "inprogress") return "in-progress";
+  return value;
+};
+
+export const statusBadge = s => {
+  const value = normalizeComplaintStatus(s);
+  return value === "open" ? S.badgeOpen : value === "in-progress" ? S.badgeProg : S.badgeRes;
+};
 
 export const roleIcon = r =>
   ({ school_admin:"🏫", dept_admin:"🏬", staff:"🛠", student:"🎓" }[r] || "👤");
