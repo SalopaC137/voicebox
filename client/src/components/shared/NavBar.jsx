@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
@@ -16,6 +17,7 @@ export default function NavBar() {
   const isAdmin = isAdminRole(r);
   const isStaff = r === "staff";
   const isMobile = window.innerWidth < 768;
+  const navRef = useRef(null);
 
   const links = r === "school_admin"
     ? [["📊","Dashboard","dashboard"],["👥","Users","admin-users"],["📋","Complaints","admin-complaints"],["💬","Chat","chat"]]
@@ -33,11 +35,25 @@ export default function NavBar() {
 
   const handleNavigate = (pg) => {
     setPage(pg);
-    if (isMobile) setNavOpen(false);
+    setNavOpen(false);
   };
 
+  useEffect(() => {
+    if (!navOpen) return;
+
+    const onOutsideClick = (event) => {
+      if (!navRef.current) return;
+      if (!navRef.current.contains(event.target)) {
+        setNavOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onOutsideClick);
+    return () => document.removeEventListener("mousedown", onOutsideClick);
+  }, [navOpen, setNavOpen]);
+
   return (
-    <div style={navStyle}>
+    <div ref={navRef} style={navStyle}>
       <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "12px", fontSize: 17, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
         {navOpen ? "✕" : "☰"}
       </button>

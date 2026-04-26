@@ -7,10 +7,15 @@ const oneSignalAppId = import.meta.env.VITE_ONESIGNAL_APP_ID;
 if (oneSignalAppId && typeof window !== 'undefined') {
   window.OneSignal = window.OneSignal || [];
   window.__voiceboxOneSignalInitPromise = new Promise((resolve) => {
-    const OneSignal = window.OneSignal;
-    OneSignal.push(async function () {
+    window.OneSignal.push(async function (OneSignalSDK) {
       try {
-        await OneSignal.init({
+        const sdk = OneSignalSDK || window.OneSignal;
+        if (!sdk || typeof sdk.init !== 'function') {
+          resolve(false);
+          return;
+        }
+
+        await sdk.init({
           appId: oneSignalAppId,
           notifyButton: {
             enable: true,
@@ -18,8 +23,8 @@ if (oneSignalAppId && typeof window !== 'undefined') {
           allowLocalhostAsSecureOrigin: true,
         });
 
-        if (OneSignal?.Notifications && typeof OneSignal.Notifications.on === 'function') {
-          OneSignal.Notifications.on('permissionChange', function (permission) {
+        if (sdk?.Notifications && typeof sdk.Notifications.on === 'function') {
+          sdk.Notifications.on('permissionChange', function (permission) {
             console.log('Permission changed:', permission);
           });
         }

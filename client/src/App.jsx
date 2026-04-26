@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider,  useApp  } from "./context/AppContext";
+import S from "./utils/styles";
 
 import NavBar           from "./components/shared/NavBar";
 import VoiceBoxLanding   from "./landingpage";
