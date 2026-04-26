@@ -25,7 +25,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div style={{ ...S.page, maxWidth: 760, margin: "0", width: "100%" }}>
+    <div style={{ ...S.page, maxWidth: 700, margin: "0", width: "100%" }}>
       <div style={{ fontSize: 20, fontWeight: 900, color: "white", marginBottom: 12 }}>⚙ Settings</div>
 
       <div style={S.card}>
