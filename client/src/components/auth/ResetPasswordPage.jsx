@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useApp } from "../../context/AppContext";
 import S from "../../utils/styles";
 import axios from "axios";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
@@ -12,6 +13,7 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const urlToken = window.location.pathname.split("/reset-password/")[1];
@@ -24,6 +26,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
@@ -32,11 +35,14 @@ export default function ResetPasswordPage() {
     setMessage("");
 
     try {
+      setIsSubmitting(true);
       await axios.post(`${API_BASE}/auth/reset-password/${token}`, { password });
       setMessage("Password reset successful. You can now log in.");
       setTimeout(() => window.location.replace("/"), 2500);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to reset password.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -81,7 +87,18 @@ export default function ResetPasswordPage() {
             <div style={{ background:"rgba(34,197,94,.1)", border:"1px solid rgba(34,197,94,.3)", borderRadius:8, padding:"8px 12px", color:"#bbf7d0", fontSize:12, marginBottom:12 }}>{message}</div>
           )}
 
-          <button style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, padding:"13px 0", fontSize:14 }} type="submit">Reset Password</button>
+          <button
+            style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, padding:"13px 0", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:isSubmitting ? 0.85 : 1, cursor:isSubmitting ? "not-allowed" : "pointer" }}
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner />
+                Resetting...
+              </>
+            ) : "Reset Password"}
+          </button>
         </form>
 
         <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"rgba(255,255,255,.4)" }}>

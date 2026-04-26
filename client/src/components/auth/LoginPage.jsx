@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -69,15 +70,13 @@ export default function LoginPage() {
         >
           {isSubmitting ? (
             <>
-              <span style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,.35)", borderTopColor:"#fff", animation:"loginSpin .7s linear infinite" }} />
+              <LoadingSpinner />
               Signing in...
             </>
           ) : (
             "Sign In →"
           )}
         </button>
-
-        <style>{`@keyframes loginSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
         <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
           <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("forgot-password")}>Forgot Password?</span>

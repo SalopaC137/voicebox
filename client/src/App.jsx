@@ -113,7 +113,7 @@ function Shell() {
         <PageRouter />
       </div>
 
-      <div style={{ position: "fixed", top: 14, right: 14, zIndex: 1300, display: "flex", alignItems: "flex-start", gap: 8, maxWidth: "calc(100vw - 24px)" }}>
+      <div style={{ position: "fixed", top: isMobile ? 8 : 14, right: isMobile ? 8 : 14, zIndex: 1300, display: "flex", alignItems: "flex-start", gap: 8, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)" }}>
         <div ref={notificationsMenuRef} style={{ position: "relative" }}>
           <button
             onClick={() => setShowTopNotifications((prev) => !prev)}
@@ -129,7 +129,7 @@ function Shell() {
           </button>
 
           {showTopNotifications && (
-            <div style={{ position: "absolute", top: 48, right: 0, width: 320, maxWidth: "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
+            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(320px, calc(100vw - 16px))" : 320, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>Notifications</div>
                 <button onClick={markAllNotificationsAsRead} style={{ ...{
@@ -169,11 +169,11 @@ function Shell() {
           )}
         </div>
 
-        <div ref={accountMenuRef} style={{ position: "relative", width: "auto", maxWidth: "calc(100vw - 72px)" }}>
+        <div ref={accountMenuRef} style={{ position: "relative", width: "auto", maxWidth: isMobile ? "calc(100vw - 64px)" : "calc(100vw - 72px)" }}>
           <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden", display: "inline-block" }}>
           <button
             onClick={() => setShowAccountMenu((prev) => !prev)}
-            style={{ width: "100%", background: "transparent", border: "none", padding: "8px 10px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
+            style={{ width: "100%", background: "transparent", border: "none", padding: isMobile ? "7px 9px" : "8px 10px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
           >
             <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(45,212,191,.14)", border: "1px solid rgba(45,212,191,.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#2DD4BF", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
@@ -183,7 +183,7 @@ function Shell() {
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
                   {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
+                <div style={{ display: isMobile ? "none" : "block", fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
                   {currentUser?.email || "No email"}
                 </div>
               </div>
@@ -192,7 +192,7 @@ function Shell() {
           </button>
 
           {showAccountMenu && (
-            <div style={{ position: "absolute", top: 48, right: 0, width: 220, maxWidth: "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 8 }}>
+            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(220px, calc(100vw - 16px))" : 220, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 8 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <button
                   onClick={() => {
@@ -257,7 +257,7 @@ function Shell() {
       </div>
 
       {complaintBanner && (
-        <div style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 1300, width: "min(520px, calc(100vw - 24px))" }}>
+        <div style={{ position: "fixed", top: isMobile ? 56 : 14, left: "50%", transform: "translateX(-50%)", zIndex: 1300, width: "min(520px, calc(100vw - 24px))" }}>
           <div style={{ background: "rgba(6,78,59,.95)", border: "1px solid rgba(52,211,153,.45)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
               <div>
@@ -270,7 +270,7 @@ function Shell() {
         </div>
       )}
 
-      <div style={{ position: "fixed", top: 90, right: 14, zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: "min(360px, calc(100vw - 24px))" }}>
+      <div style={{ position: "fixed", top: isMobile ? "auto" : 90, bottom: isMobile ? 12 : "auto", right: 14, left: isMobile ? 14 : "auto", zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: isMobile ? "calc(100vw - 28px)" : "min(360px, calc(100vw - 24px))" }}>
         {toasts.map((toast) => (
           <div key={toast.id} style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.4)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.25)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>

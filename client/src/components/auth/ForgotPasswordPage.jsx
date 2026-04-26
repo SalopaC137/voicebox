@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import S from "../../utils/styles";
 import axios from "axios";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
@@ -10,17 +11,22 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError("");
     setMessage("");
 
     try {
+      setIsSubmitting(true);
       await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       setMessage("Password reset email sent. Check your inbox.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send reset email.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,7 +63,18 @@ export default function ForgotPasswordPage() {
             <div style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"8px 12px", color:"#fca5a5", fontSize:12, marginBottom:12 }}>{error}</div>
           )}
 
-          <button type="submit" style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, padding:"13px 0", fontSize:14 }}>Send Reset Email</button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, padding:"13px 0", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:isSubmitting ? 0.85 : 1, cursor:isSubmitting ? "not-allowed" : "pointer" }}
+          >
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner />
+                Sending...
+              </>
+            ) : "Send Reset Email"}
+          </button>
         </form>
 
         <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"rgba(255,255,255,.4)" }}>

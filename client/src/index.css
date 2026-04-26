@@ -33,6 +33,11 @@ select option {
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
 
+@keyframes vbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 767px) {
   div[style*="grid-template-columns: repeat(4,1fr)"] {
     grid-template-columns: repeat(2,1fr) !important;

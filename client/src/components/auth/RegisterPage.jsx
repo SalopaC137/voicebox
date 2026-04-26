@@ -4,6 +4,7 @@ import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
 import { SCHOOLS, NON_ACADEMIC, ROLE_LABELS, SCHOOL_ADMIN_CODE, DEPT_ADMIN_CODE, YEAR_OF_STUDY, TVET_PROGRAMMES } from "../../data/university";
 import { getDeptName, getSchoolName, roleIcon } from "../../utils/helpers";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 export default function RegisterPage() {
   const { register }  = useAuth();
@@ -84,7 +85,6 @@ export default function RegisterPage() {
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#060C18,#0B1820)", padding:20 }}>
-      <style>{`@keyframes registerSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <div style={{ width:640, maxWidth:"calc(100vw - 28px)", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:22, padding:40 }}>
 
         {/* Header */}
@@ -294,10 +294,7 @@ export default function RegisterPage() {
           >
             {step === 4 && isSubmitting ? (
               <>
-                <span
-                  aria-hidden="true"
-                  style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,.35)", borderTopColor:"#fff", animation:"registerSpin .7s linear infinite" }}
-                />
+                <LoadingSpinner />
                 Creating Account...
               </>
             ) : step===4?"Create Account ✓":"Continue →"}
