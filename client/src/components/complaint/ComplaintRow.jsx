@@ -65,7 +65,13 @@ export default function ComplaintRow({ c }) {
   };
 
   return (
-    <div style={{ borderBottom:"1px solid rgba(255,255,255,.05)", paddingBottom:10, marginBottom:10, borderRadius:8, padding:c._highlight?8:0, background:c._highlight?"rgba(45,212,191,.08)":"transparent", border:c._highlight?"1px solid rgba(45,212,191,.35)":"1px solid transparent" }}>
+    <div style={{
+      borderRadius:12,
+      padding:12,
+      marginBottom:12,
+      background:c._highlight?"rgba(45,212,191,.08)":"rgba(255,255,255,.03)",
+      border:c._highlight?"1px solid rgba(45,212,191,.35)":"1px solid rgba(255,255,255,.08)",
+    }}>
 
       {/* ── Header row ── */}
       <div style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer" }} onClick={() => handleExpand()}>

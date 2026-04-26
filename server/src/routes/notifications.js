@@ -13,7 +13,7 @@ router.use(protect);
 
 router.get("/", getMyNotifications);
 router.post("/save-notification-id", saveNotificationId);
-router.patch("/:id/read", markNotificationAsRead);
 router.patch("/read-all", markAllNotificationsAsRead);
+router.patch("/:id/read", markNotificationAsRead);
 
 module.exports = router;

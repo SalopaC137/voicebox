@@ -60,7 +60,7 @@ function PageRouter() {
 
 function Shell() {
   const { currentUser, loading, logout } = useAuth();
-  const { navOpen, setPage, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markAllNotificationsAsRead, openComplaintFromNotification } = useApp();
+  const { navOpen, setPage, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead, openComplaintFromNotification } = useApp();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showTopNotifications, setShowTopNotifications] = useState(false);
   const accountMenuRef = useRef(null);
@@ -144,25 +144,59 @@ function Shell() {
               </div>
               <div style={{ maxHeight: 240, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
                 {notifications.slice(0, 8).map((n) => (
-                  <button
+                  <div
                     key={n._id}
-                    onClick={() => {
-                      openComplaintFromNotification(n);
-                      setShowTopNotifications(false);
-                    }}
                     style={{
-                      textAlign: "left",
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
                       background: n.read ? "rgba(255,255,255,.02)" : "rgba(45,212,191,.08)",
                       border: n.read ? "1px solid rgba(255,255,255,.08)" : "1px solid rgba(45,212,191,.22)",
                       borderRadius: 10,
                       padding: "8px 9px",
-                      color: "rgba(255,255,255,.9)",
-                      cursor: "pointer",
                     }}
                   >
-                    <div style={{ fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{n.message}</div>
-                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.45)" }}>{new Date(n.createdAt).toLocaleString()}</div>
-                  </button>
+                    <button
+                      onClick={() => {
+                        openComplaintFromNotification(n);
+                        setShowTopNotifications(false);
+                      }}
+                      style={{
+                        textAlign: "left",
+                        background: "transparent",
+                        border: "none",
+                        color: "rgba(255,255,255,.9)",
+                        cursor: "pointer",
+                        padding: 0,
+                        margin: 0,
+                        flex: 1,
+                      }}
+                    >
+                      <div style={{ fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{n.message}</div>
+                      <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.45)" }}>{new Date(n.createdAt).toLocaleString()}</div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markNotificationAsRead(n._id);
+                      }}
+                      title={n.read ? "Read" : "Mark as read"}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: n.read ? "default" : "pointer",
+                        color: n.read ? "rgba(156,163,175,.9)" : "#22C55E",
+                        padding: 0,
+                        width: 24,
+                        flexShrink: 0,
+                      }}
+                      disabled={n.read}
+                    >
+                      ✓✓
+                    </button>
+                  </div>
                 ))}
                 {notifications.length === 0 && (
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center", padding: "12px 6px" }}>No notifications yet.</div>
