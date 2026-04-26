@@ -82,6 +82,88 @@ exports.getComplaints = async (req, res) => {
   }
 };
 
+// GET /api/complaints/reports/cumulative
+exports.getCumulativeReport = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.role !== "school_admin" && user.role !== "dept_admin") {
+      return res.status(403).json({ message: "Only admins can generate reports." });
+    }
+
+    const scopeMatch =
+      user.role === "school_admin"
+        ? { targetSchool: user.school }
+        : { targetSchool: user.school, targetDept: user.department };
+
+    const [statusRows, typeRows, priorityRows, categoryRows, monthlyRows] = await Promise.all([
+      Complaint.aggregate([
+        { $match: scopeMatch },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]),
+      Complaint.aggregate([
+        { $match: scopeMatch },
+        { $group: { _id: "$type", count: { $sum: 1 } } },
+      ]),
+      Complaint.aggregate([
+        { $match: scopeMatch },
+        { $group: { _id: "$priority", count: { $sum: 1 } } },
+      ]),
+      Complaint.aggregate([
+        { $match: scopeMatch },
+        { $group: { _id: "$category", count: { $sum: 1 } } },
+      ]),
+      Complaint.aggregate([
+        { $match: scopeMatch },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } },
+      ]),
+    ]);
+
+    const status = { open: 0, "in-progress": 0, resolved: 0 };
+    statusRows.forEach((row) => {
+      if (row && row._id in status) status[row._id] = row.count;
+    });
+
+    const total = status.open + status["in-progress"] + status.resolved;
+    const resolutionRate = total > 0 ? Math.round((status.resolved / total) * 100) : 0;
+
+    res.json({
+      scope: {
+        role: user.role,
+        school: user.school || null,
+        department: user.role === "dept_admin" ? user.department || null : null,
+      },
+      totals: {
+        total,
+        open: status.open,
+        inProgress: status["in-progress"],
+        resolved: status.resolved,
+        resolutionRate,
+      },
+      breakdowns: {
+        byType: typeRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
+        byPriority: priorityRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
+        byCategory: categoryRows.map((row) => ({ key: row._id || "unknown", count: row.count })),
+      },
+      monthlyTrend: monthlyRows.map((row) => ({
+        year: row._id.year,
+        month: row._id.month,
+        count: row.count,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // POST /api/complaints
 exports.createComplaint = async (req, res) => {
   try {
@@ -89,6 +171,22 @@ exports.createComplaint = async (req, res) => {
             targetSchool, targetDept, targetLecturerId, targetLecturerUid } = req.body;
 
     if (!targetLecturerId) return res.status(400).json({ message: "A specific recipient is required." });
+
+    // Guard against accidental double-submit of the exact same complaint payload.
+    const recentDuplicate = await Complaint.findOne({
+      submittedBy: req.user._id,
+      targetLecturerId,
+      title,
+      description,
+      type,
+      createdAt: { $gte: new Date(Date.now() - 30 * 1000) },
+    })
+      .populate("submittedBy", "firstName lastName uniqueId")
+      .populate("targetLecturerId", "firstName lastName uniqueId designation");
+
+    if (recentDuplicate) {
+      return res.status(200).json(recentDuplicate);
+    }
 
     const complaint = await Complaint.create({
       submittedBy: req.user._id,
@@ -132,6 +230,12 @@ exports.updateStatus = async (req, res) => {
     const c = await Complaint.findById(req.params.id);
     if (!c) return res.status(404).json({ message: "Complaint not found." });
 
+    const requestedStatus = req.body.status;
+    const validStatuses = ["open", "in-progress", "resolved"];
+    if (!validStatuses.includes(requestedStatus)) {
+      return res.status(400).json({ message: "Invalid status value." });
+    }
+
     const u = req.user;
     const isSubmitter = String(c.submittedBy) === String(u._id);
     const canModerate =
@@ -142,7 +246,16 @@ exports.updateStatus = async (req, res) => {
 
     if (!canModerate) return res.status(403).json({ message: "Forbidden." });
 
-    c.status = req.body.status;
+    if (requestedStatus === "resolved") {
+      if (!isSubmitter) {
+        return res.status(403).json({ message: "Only the complaint initiator can mark as resolved." });
+      }
+      if (c.status !== "in-progress") {
+        return res.status(400).json({ message: "Complaint can only be resolved after it is in progress." });
+      }
+    }
+
+    c.status = requestedStatus;
     await c.save();
 
     // Notify the other participant(s) that status has changed.
@@ -187,12 +300,17 @@ exports.addReply = async (req, res) => {
       message:    req.body.message,
     });
     
-    // Auto-change status from "open" to "in-progress" on first reply
-    // but only if the person replying is the receiver (target lecturer or
-    // department admin).  We don't want the complainant's own comments to
-    // immediately push the ticket into progress.
+    // Auto-change status from "open" to "in-progress" when the receiver
+    // (target lecturer or scoped dept admin) sends their first response.
+    // This should still happen even if the submitter replied earlier.
     const senderIsReceiver = isTarget || isDeptAdmin;
-    if (c.status === "open" && c.replies.length === 1 && senderIsReceiver) {
+    const hadReceiverReplyBefore = c.replies.slice(0, -1).some((reply) => {
+      const senderRole = reply.senderRole;
+      const senderId = String(reply.senderId || "");
+      return senderId === String(c.targetLecturerId) || senderRole === "dept_admin";
+    });
+
+    if (c.status === "open" && senderIsReceiver && !hadReceiverReplyBefore) {
       c.status = "in-progress";
     }
     

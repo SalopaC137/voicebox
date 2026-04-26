@@ -21,6 +21,7 @@ export default function NewComplaintPage() {
   });
   const [touched, setTouched] = useState(false);
   const [err,     setErr]     = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch all staff on mount
   useEffect(() => {
@@ -45,18 +46,21 @@ export default function NewComplaintPage() {
   const missingTarget = touched && !form.targetLecturerId;
 
   const submit = () => {
+    if (isSubmitting) return;
     setTouched(true);
     if (!form.title.trim())       { setErr("A title is required."); return; }
     if (!form.description.trim()) { setErr("A description is required."); return; }
     if (!form.targetLecturerId)   { setErr("You must select a specific person."); return; }
     setErr("");
+    setIsSubmitting(true);
     addComplaint({ ...form })
       .then(() => {
         // after filing a complaint we send the user directly to the complaints page
         // so they can immediately verify it was recorded (even if anonymous)
         setPage("complaints");
       })
-      .catch(e => setErr(e.response?.data?.message || "Failed to submit"));
+      .catch(e => setErr(e.response?.data?.message || "Failed to submit"))
+      .finally(() => setIsSubmitting(false));
   };
 
   return (
@@ -192,8 +196,12 @@ export default function NewComplaintPage() {
             </div>
           )}
 
-          <button style={{ ...S.btn, ...S.btnTeal, ...S.btnFull }} onClick={submit}>
-            📤 Submit {form.type==="complaint"?"Complaint":"Suggestion"}
+          <button
+            style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, opacity:isSubmitting?0.75:1, cursor:isSubmitting?"not-allowed":"pointer" }}
+            onClick={submit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : `📤 Submit ${form.type==="complaint"?"Complaint":"Suggestion"}`}
           </button>
         </div>
       </div>

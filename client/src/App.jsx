@@ -60,7 +60,7 @@ function PageRouter() {
 
 function Shell() {
   const { currentUser, loading, logout } = useAuth();
-  const { navOpen, setPage, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
+  const { navOpen, setPage, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markAllNotificationsAsRead, openComplaintFromNotification } = useApp();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showTopNotifications, setShowTopNotifications] = useState(false);
   const accountMenuRef = useRef(null);
@@ -146,7 +146,10 @@ function Shell() {
                 {notifications.slice(0, 8).map((n) => (
                   <button
                     key={n._id}
-                    onClick={() => !n.read && markNotificationAsRead(n._id)}
+                    onClick={() => {
+                      openComplaintFromNotification(n);
+                      setShowTopNotifications(false);
+                    }}
                     style={{
                       textAlign: "left",
                       background: n.read ? "rgba(255,255,255,.02)" : "rgba(45,212,191,.08)",
@@ -274,10 +277,14 @@ function Shell() {
         {toasts.map((toast) => (
           <div key={toast.id} style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.4)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.25)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              <div>
+              <button
+                onClick={() => openComplaintFromNotification({ _id: toast.notificationId, complaintId: toast.complaintId, read: false })}
+                style={{ background: "transparent", border: "none", padding: 0, margin: 0, textAlign: "left", cursor: toast.complaintId ? "pointer" : "default", color: "inherit", flex: 1 }}
+                disabled={!toast.complaintId}
+              >
                 <div style={{ fontSize: 11, color: "#2DD4BF", fontWeight: 700, marginBottom: 3 }}>New notification</div>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.9)" }}>{toast.message}</div>
-              </div>
+              </button>
               <button onClick={() => dismissToast(toast.id)} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,.55)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
           </div>

@@ -11,7 +11,7 @@ const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
 export default function AdminComplaints() {
   const { currentUser }           = useAuth();
-  const { complaints, addAdminNote, users }     = useApp();
+  const { complaints, addAdminNote, users, selectedComplaintId, setSelectedComplaintId }     = useApp();
   // users are stored in context so that real‑time events update this list too
 
   const visible     = scopeComplaints(complaints, currentUser);
@@ -23,8 +23,30 @@ export default function AdminComplaints() {
   const [deptFilter,   setDeptFilter]   = useState("all");
   const [search,       setSearch]       = useState("");
   const [showReport,   setShowReport]   = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportData, setReportData] = useState(null);
   const [noteMap,      setNoteMap]      = useState({});
   const [noteOpen,     setNoteOpen]     = useState({});
+
+  useEffect(() => {
+    if (!showReport) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setReportLoading(true);
+    setReportError("");
+
+    axios.get(`${API_BASE}/complaints/reports/cumulative`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => setReportData(res.data || null))
+      .catch((err) => {
+        setReportError(err.response?.data?.message || "Failed to load cumulative report.");
+      })
+      .finally(() => setReportLoading(false));
+  }, [showReport]);
 
   const filtered = visible.filter(c => {
     const ms = !search || (c.title+c.category+(c.targetLecturerUid||"")+(c.targetDept||"")).toLowerCase().includes(search.toLowerCase());
@@ -33,14 +55,20 @@ export default function AdminComplaints() {
     return ms && ms2 && md;
   });
 
-  // Report stats
-  const total    = visible.length;
-  const resolved = visible.filter(c=>c.status==="resolved").length;
-  const open     = visible.filter(c=>c.status==="open").length;
-  const inProg   = visible.filter(c=>c.status==="in-progress").length;
-  const resolRate= total ? Math.round((resolved/total)*100) : 0;
-  const byCat    = visible.reduce((a,c)=>{a[c.category]=(a[c.category]||0)+1;return a;},{});
-  const byPri    = visible.reduce((a,c)=>{a[c.priority]=(a[c.priority]||0)+1;return a;},{});
+  // Report stats (prefer backend cumulative report when available)
+  const total    = reportData?.totals?.total ?? visible.length;
+  const resolved = reportData?.totals?.resolved ?? visible.filter(c=>c.status==="resolved").length;
+  const open     = reportData?.totals?.open ?? visible.filter(c=>c.status==="open").length;
+  const inProg   = reportData?.totals?.inProgress ?? visible.filter(c=>c.status==="in-progress").length;
+  const resolRate= reportData?.totals?.resolutionRate ?? (total ? Math.round((resolved/total)*100) : 0);
+  const byCatRaw = reportData?.breakdowns?.byCategory || null;
+  const byPriRaw = reportData?.breakdowns?.byPriority || null;
+  const byCat    = byCatRaw
+    ? byCatRaw.reduce((a, row) => { a[row.key] = row.count; return a; }, {})
+    : visible.reduce((a,c)=>{a[c.category]=(a[c.category]||0)+1;return a;},{});
+  const byPri    = byPriRaw
+    ? byPriRaw.reduce((a, row) => { a[row.key] = row.count; return a; }, {})
+    : visible.reduce((a,c)=>{a[c.priority]=(a[c.priority]||0)+1;return a;},{});
   const byDept   = deptOptions.map(d => ({ ...d, count:visible.filter(c=>c.targetDept===d.code).length }));
 
   const sendNote = (cid) => {
@@ -54,6 +82,13 @@ export default function AdminComplaints() {
     setNoteMap(p=>({...p,[cid]:""}));
     setNoteOpen(p=>({...p,[cid]:false}));
   };
+
+  useEffect(() => {
+    if (selectedComplaintId) {
+      const timer = setTimeout(() => setSelectedComplaintId(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedComplaintId, setSelectedComplaintId]);
 
   const scopeTitle = currentUser.role==="school_admin"
     ? `${getSchoolName(currentUser.school)} — Complaints`
@@ -77,6 +112,14 @@ export default function AdminComplaints() {
       {showReport && (
         <div style={{ ...S.card, marginBottom:18, background:"rgba(245,158,11,.03)", border:"1px solid rgba(245,158,11,.18)" }}>
           <div style={{ fontSize:14, fontWeight:800, color:"#FCD34D", marginBottom:14 }}>📊 {scopeTitle} Report</div>
+
+          {reportLoading && (
+            <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", marginBottom:10 }}>Loading cumulative report...</div>
+          )}
+
+          {reportError && (
+            <div style={{ fontSize:12, color:"#fca5a5", marginBottom:10 }}>{reportError}</div>
+          )}
 
           {/* 5 stat cards */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:14 }}>
@@ -169,7 +212,7 @@ export default function AdminComplaints() {
           const targetStaff = users.find(u => u.uniqueId===c.targetLecturerUid);
           return (
             <div key={c._id} style={{ borderBottom:"1px solid rgba(255,255,255,.06)", paddingBottom:12, marginBottom:12 }}>
-              <ComplaintRow c={c} />
+              <ComplaintRow c={{ ...c, _highlight: String(c._id) === String(selectedComplaintId), _forceExpand: String(c._id) === String(selectedComplaintId) }} />
 
               {/* Admin notes history */}
               {(c.adminNotes||[]).map(n => (

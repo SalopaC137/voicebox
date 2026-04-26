@@ -18,15 +18,33 @@ export function AppProvider({ children }) {
   const [complaintBanner, setComplaintBanner] = useState(null);
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState("dashboard");
+  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const socketRef = useRef(null);
   const bannerTimeoutRef = useRef(null);
 
+  const markNotificationAsRead = async (id) => {
+    try {
+      if (!id) return;
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API_BASE}/notifications/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications((prev) => prev.map((n) => (
+        String(n._id) === String(id) ? { ...n, read: true } : n
+      )));
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
   const pushToast = (notification) => {
     const toastId = `${notification._id || "toast"}-${Date.now()}`;
     const toast = {
       id: toastId,
+      notificationId: notification._id || null,
+      complaintId: notification.complaintId || null,
       message: notification.message,
       createdAt: notification.createdAt || new Date().toISOString(),
       type: notification.type || "system",
@@ -34,6 +52,8 @@ export function AppProvider({ children }) {
     setToasts((prev) => [toast, ...prev].slice(0, 5));
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== toastId));
+      // Consider auto-dismissed toast as "seen" so it won't pop again next login.
+      if (notification._id) markNotificationAsRead(notification._id);
     }, 6000);
   };
 
@@ -46,6 +66,23 @@ export function AppProvider({ children }) {
     if (bannerTimeoutRef.current) {
       clearTimeout(bannerTimeoutRef.current);
       bannerTimeoutRef.current = null;
+    }
+  };
+
+  const openComplaintFromNotification = async (notification) => {
+    if (!notification) return;
+
+    if (notification._id && !notification.read) {
+      await markNotificationAsRead(notification._id);
+    }
+
+    if (notification.complaintId) {
+      setSelectedComplaintId(String(notification.complaintId));
+      if (isAdminRole(currentUser?.role)) {
+        setPage("admin-complaints");
+      } else {
+        setPage("complaints");
+      }
     }
   };
 
@@ -281,20 +318,6 @@ export function AppProvider({ children }) {
     }
   }, [currentUser, authLoading]);
 
-  const markNotificationAsRead = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.patch(`${API_BASE}/notifications/${id}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNotifications((prev) => prev.map((n) => (
-        String(n._id) === String(id) ? { ...n, read: true } : n
-      )));
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
-    }
-  };
-
   const markAllNotificationsAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -413,11 +436,13 @@ export function AppProvider({ children }) {
   return (
     <AppCtx.Provider value={{
       complaints, messages, notifications, unreadCount, toasts, complaintBanner, users,
+      selectedComplaintId, setSelectedComplaintId,
       // expose setter so components can remove suspended users or apply
       // other real–time updates.
       setUsers,
       addComplaint, updateComplaint, deleteComplaint, addReply, addAdminNote, addMessage,
       markNotificationAsRead, markAllNotificationsAsRead, dismissToast, dismissComplaintBanner,
+      openComplaintFromNotification,
       joinChatRoom, leaveChatRoom,
       page, setPage,
       navOpen, setNavOpen,

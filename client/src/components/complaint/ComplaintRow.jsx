@@ -29,6 +29,19 @@ export default function ComplaintRow({ c }) {
   const [expanded,  setExpanded]  = useState(false);
   const [replyTxt,  setReplyTxt]  = useState("");
 
+  let statusAction = null;
+  if (c.status === "open" && canMod) {
+    statusAction = { label: "→ Progress", next: "in-progress" };
+  } else if (c.status === "in-progress" && isSubmitter) {
+    statusAction = { label: "→ Resolved", next: "resolved" };
+  }
+
+  useEffect(() => {
+    if (c._forceExpand) {
+      setExpanded(true);
+    }
+  }, [c._forceExpand]);
+
   const handleExpand = () => {
     setExpanded(p => !p);
     // Mark as read when expanded
@@ -52,7 +65,7 @@ export default function ComplaintRow({ c }) {
   };
 
   return (
-    <div style={{ borderBottom:"1px solid rgba(255,255,255,.05)", paddingBottom:10, marginBottom:10 }}>
+    <div style={{ borderBottom:"1px solid rgba(255,255,255,.05)", paddingBottom:10, marginBottom:10, borderRadius:8, padding:c._highlight?8:0, background:c._highlight?"rgba(45,212,191,.08)":"transparent", border:c._highlight?"1px solid rgba(45,212,191,.35)":"1px solid transparent" }}>
 
       {/* ── Header row ── */}
       <div style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer" }} onClick={() => handleExpand()}>
@@ -86,10 +99,10 @@ export default function ComplaintRow({ c }) {
           </div>
         </div>
         <div style={{ display:"flex", gap:5, flexShrink:0, alignItems:"center" }}>
-          {canMod && c.status !== "resolved" && (
-            <button onClick={e => { e.stopPropagation(); updateComplaint(c._id, { status: c.status==="open" ? "in-progress" : (isSubmitter ? "resolved" : c.status) }); }}
+          {statusAction && (
+            <button onClick={e => { e.stopPropagation(); updateComplaint(c._id, { status: statusAction.next }); }}
               style={{ ...S.btn, padding:"4px 9px", fontSize:11, background:"rgba(16,185,129,.12)", border:"1px solid rgba(16,185,129,.3)", color:"#6EE7B7" }}>
-              {c.status === "open" ? "→ Progress" : isSubmitter ? "→ Resolved" : "✓"}
+              {statusAction.label}
             </button>
           )}
           {canDelete && (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useApp }  from "../context/AppContext";
 import S from "../utils/styles";
@@ -6,7 +6,7 @@ import ComplaintRow from "../components/complaint/ComplaintRow";
 
 export default function ComplaintsPage() {
   const { currentUser }         = useAuth();
-  const { complaints, setPage } = useApp();
+  const { complaints, setPage, selectedComplaintId, setSelectedComplaintId } = useApp();
   const isStaff = currentUser.role === "staff";
   const isDeptAdmin = currentUser.role === "dept_admin";
   const complaintsList = Array.isArray(complaints) ? complaints : [];
@@ -24,11 +24,16 @@ export default function ComplaintsPage() {
   const [tab, setTab] = useState(isDeptAdmin ? "personal" : "all");
   const [type, setType] = useState("all");
   const [filter, setFilter] = useState("all");
-  const [view, setView] = useState("complaints");
-  
   const mine = tab === "personal" ? personal : tab === "dept" ? deptwide : isDeptAdmin ? [...personal, ...deptwide] : personal;
   const byType = type === "all" ? mine : mine.filter(c => c.type === type);
   const filtered = filter === "all" ? byType : byType.filter(c => c.status === filter);
+
+  useEffect(() => {
+    if (selectedComplaintId) {
+      const timer = setTimeout(() => setSelectedComplaintId(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedComplaintId]);
 
   return (
     <div style={S.page}>
@@ -84,7 +89,16 @@ export default function ComplaintsPage() {
       </div>
 
       <div style={S.card}>
-        {filtered.map(c => <ComplaintRow key={c._id} c={c} />)}
+        {filtered.map((c) => (
+          <ComplaintRow
+            key={c._id}
+            c={{
+              ...c,
+              _highlight: String(c._id) === String(selectedComplaintId),
+              _forceExpand: String(c._id) === String(selectedComplaintId),
+            }}
+          />
+        ))}
         {filtered.length === 0 && <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)", padding:28 }}>No complaints here.</div>}
       </div>
     </div>

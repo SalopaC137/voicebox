@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   getComplaints, createComplaint, updateStatus,
-  addReply, addAdminNote, markAsRead, deleteComplaint,
+  addReply, addAdminNote, markAsRead, deleteComplaint, getCumulativeReport,
 } = require("../controllers/complaintsController");
 const { protect, restrictTo } = require("../middleware/auth");
 
@@ -11,6 +11,7 @@ router.use(protect);
 
 router.get("/",    getComplaints);
 router.post("/",   createComplaint);
+router.get("/reports/cumulative", restrictTo("school_admin", "dept_admin"), getCumulativeReport);
 
 router.patch("/:id/status",     updateStatus);
 router.patch("/:id/read",       markAsRead);
