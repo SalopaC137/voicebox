@@ -1,7 +1,7 @@
 const { Resend } = require("resend");
 
 let resend = null;
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "VoiceBox <noreply@voicebox.qzz.io>";
+const FROM_EMAIL = "VoiceBox <noreply@voicebox.qzz.io>";
 
 function getResendClient() {
   if (!process.env.RESEND_API_KEY) return null;
