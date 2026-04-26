@@ -55,17 +55,25 @@ function PageRouter() {
 
 function Shell() {
   const { currentUser, loading, logout } = useAuth();
-  const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner } = useApp();
+  const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showTopNotifications, setShowTopNotifications] = useState(false);
   const accountMenuRef = useRef(null);
+  const notificationsMenuRef = useRef(null);
   
   const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
-      if (!accountMenuRef.current) return;
-      if (!accountMenuRef.current.contains(event.target)) {
+      const clickedAccount = accountMenuRef.current && accountMenuRef.current.contains(event.target);
+      const clickedNotifications = notificationsMenuRef.current && notificationsMenuRef.current.contains(event.target);
+
+      if (!clickedAccount) {
         setShowAccountMenu(false);
+      }
+
+      if (!clickedNotifications) {
+        setShowTopNotifications(false);
       }
     };
 
@@ -100,25 +108,86 @@ function Shell() {
         <PageRouter />
       </div>
 
-      <div ref={accountMenuRef} style={{ position: "fixed", top: 14, right: 14, zIndex: 1300, width: "min(320px, calc(100vw - 24px))" }}>
-        <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden" }}>
+      <div style={{ position: "fixed", top: 14, right: 14, zIndex: 1300, display: "flex", alignItems: "flex-start", gap: 8, maxWidth: "calc(100vw - 24px)" }}>
+        <div ref={notificationsMenuRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => setShowTopNotifications((prev) => !prev)}
+            style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.18)", color: "#2DD4BF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 24px rgba(0,0,0,.32)", position: "relative" }}
+            aria-label="Notifications"
+          >
+            <span style={{ fontSize: 16 }}>🔔</span>
+            {unreadCount > 0 && (
+              <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, borderRadius: 999, background: "#F59E0B", color: "#111827", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #0B1220" }}>
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showTopNotifications && (
+            <div style={{ position: "absolute", top: 48, right: 0, width: 320, maxWidth: "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>Notifications</div>
+                <button onClick={markAllNotificationsAsRead} style={{ ...{
+                  background: "rgba(255,255,255,.04)",
+                  border: "1px solid rgba(255,255,255,.08)",
+                  color: "rgba(255,255,255,.78)",
+                  borderRadius: 8,
+                  padding: "4px 8px",
+                  fontSize: 10,
+                  cursor: "pointer",
+                }}}>Mark all read</button>
+              </div>
+              <div style={{ maxHeight: 240, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+                {notifications.slice(0, 8).map((n) => (
+                  <button
+                    key={n._id}
+                    onClick={() => !n.read && markNotificationAsRead(n._id)}
+                    style={{
+                      textAlign: "left",
+                      background: n.read ? "rgba(255,255,255,.02)" : "rgba(45,212,191,.08)",
+                      border: n.read ? "1px solid rgba(255,255,255,.08)" : "1px solid rgba(45,212,191,.22)",
+                      borderRadius: 10,
+                      padding: "8px 9px",
+                      color: "rgba(255,255,255,.9)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{n.message}</div>
+                    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.45)" }}>{new Date(n.createdAt).toLocaleString()}</div>
+                  </button>
+                ))}
+                {notifications.length === 0 && (
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center", padding: "12px 6px" }}>No notifications yet.</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div ref={accountMenuRef} style={{ width: "auto", maxWidth: "calc(100vw - 72px)" }}>
+          <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden", display: "inline-block" }}>
           <button
             onClick={() => setShowAccountMenu((prev) => !prev)}
-            style={{ width: "100%", background: "transparent", border: "none", padding: "10px 12px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}
+            style={{ width: "100%", background: "transparent", border: "none", padding: "8px 10px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
           >
-            <div style={{ minWidth: 0, textAlign: "left" }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
+            <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(45,212,191,.14)", border: "1px solid rgba(45,212,191,.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#2DD4BF", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+                {`${currentUser?.firstName || "A"}`.trim().slice(0, 2).toUpperCase()}
               </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {currentUser?.email || "No email"}
+              <div style={{ minWidth: 0, textAlign: "left" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
+                  {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
+                </div>
               </div>
             </div>
             <span style={{ fontSize: 12, color: "rgba(255,255,255,.65)", flexShrink: 0 }}>{showAccountMenu ? "▲" : "▼"}</span>
           </button>
 
           {showAccountMenu && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: 8 }}>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: 8, minWidth: 220 }}>
+              <div style={{ padding: "2px 2px 8px", fontSize: 11, color: "rgba(255,255,255,.62)", borderBottom: "1px solid rgba(255,255,255,.06)", marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {currentUser?.email || "No email"}
+              </div>
               <button
                 onClick={logout}
                 style={{ width: "100%", background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.45)", color: "#FCA5A5", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
@@ -128,6 +197,7 @@ function Shell() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {complaintBanner && (

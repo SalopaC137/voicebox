@@ -47,20 +47,24 @@ export const scopeUsers = (users, user) => {
 };
 
 // Build chat rooms accessible to a user
-export const buildRooms = (user) => {
-  const { role, school, department, yearOfStudy } = user;
+export const buildRooms = (user, selectedProgramType = null) => {
+  const { role, school, department, yearOfStudy, programType } = user;
+  const activeProgramType = role === "student"
+    ? (programType || "degree")
+    : (selectedProgramType || "degree");
 
   // helper to create course entries with indentation
-  // for students, append year to room id (e.g. course:CIN:CS:Y1)
+  // for students, append year to room id (e.g. course:CIN:CS:degree:Y1)
   const deptCourses = (d) => {
     if (!d || !Array.isArray(d.courses)) return [];
     return d.courses.map(c => {
+      const programSegment = activeProgramType === "diploma" ? ":diploma" : "";
       const roomId = role === "student" && yearOfStudy
-        ? `course:${d.code}:${c.code}:Y${yearOfStudy}`
-        : `course:${d.code}:${c.code}`;
+        ? `course:${d.code}:${c.code}${programSegment}:Y${yearOfStudy}`
+        : `course:${d.code}:${c.code}${programSegment}`;
       return {
         id: roomId,
-        label: `     └ 📘 ${c.name}`,
+        label: `     └ 📘 ${c.name}${activeProgramType === "diploma" ? " (Diploma)" : " (Degree)"}`,
       };
     });
   };

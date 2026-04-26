@@ -12,8 +12,10 @@ export default function ChatPage() {
   const { currentUser } = useAuth();
   const { messages, addMessage, joinChatRoom, leaveChatRoom } = useApp();
   const r     = currentUser?.role;
-  const rooms = currentUser ? buildRooms(currentUser) : [];
+  const [selectedProgramType, setSelectedProgramType] = useState("degree");
+  const rooms = currentUser ? buildRooms(currentUser, selectedProgramType) : [];
   const canSelectYear = isAdminRole(r) || r === "staff";
+  const canSelectProgramType = isAdminRole(r) || r === "staff";
   const isMobile = window.innerWidth < 768;
 
   const [room, setRoom] = useState("general");
@@ -50,6 +52,7 @@ export default function ChatPage() {
   const effectiveRoom = (isCourseRoom && selectedYear && canSelectYear)
     ? `${room}:Y${selectedYear}`
     : room;
+  const currentProgramType = r === "student" ? (currentUser?.programType || "degree") : selectedProgramType;
 
   // Initialize room when rooms become available
   useEffect(() => {
@@ -67,6 +70,19 @@ export default function ChatPage() {
       setDebugInfo(`No rooms available for role: ${r}, school: ${currentUser.school}, dept: ${currentUser.department}`);
     }
   }, [rooms.length, currentUser, r, hiddenRooms]);
+
+  useEffect(() => {
+    if (r === "student") {
+      setSelectedProgramType(currentUser?.programType || "degree");
+    }
+  }, [r, currentUser?.programType]);
+
+  useEffect(() => {
+    if (room !== "general" && !rooms.some((rm) => rm.id === room)) {
+      const nextRoom = rooms.find((rm) => !hiddenRooms.includes(rm.id));
+      if (nextRoom) setRoom(nextRoom.id);
+    }
+  }, [rooms, room, hiddenRooms]);
 
   const visibleRooms = rooms.filter(rm => !hiddenRooms.includes(rm.id));
   const roomMsgs = messages.filter(m => m.room === effectiveRoom);
@@ -204,6 +220,29 @@ export default function ChatPage() {
             <option value="">All Years</option>
             {YEAR_OF_STUDY.map(y => <option key={y.value} value={y.value}>{y.label}</option>)}
           </select>
+        </div>
+      )}
+
+      {canSelectProgramType && (
+        <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+          <label style={{ fontSize:14, color:"rgba(255,255,255,.7)", fontWeight:600 }}>Select Program:</label>
+          <select
+            value={selectedProgramType}
+            onChange={e => {
+              setSelectedProgramType(e.target.value);
+              setSelectedYear(null);
+            }}
+            style={{ ...S.input, fontSize:12, padding:"6px 10px", width: isMobile ? "100%" : 140 }}
+          >
+            <option value="degree">Degree</option>
+            <option value="diploma">Diploma</option>
+          </select>
+        </div>
+      )}
+
+      {!canSelectProgramType && r === "student" && (
+        <div style={{ marginBottom:14, fontSize:12, color:"rgba(255,255,255,.45)" }}>
+          Showing {currentProgramType === "diploma" ? "diploma" : "degree"} program chats only.
         </div>
       )}
 
