@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider,  useApp  } from "./context/AppContext";
-import S from "./utils/styles";
 
 import NavBar           from "./components/shared/NavBar";
 import VoiceBoxLanding   from "./landingpage";
@@ -13,6 +12,8 @@ import ResetPasswordPage  from "./components/auth/ResetPasswordPage";
 import Dashboard        from "./pages/Dashboard";
 import ComplaintsPage   from "./pages/ComplaintsPage";
 import NewComplaintPage from "./pages/NewComplaintPage";
+import ProfilePage      from "./pages/ProfilePage";
+import SettingsPage     from "./pages/SettingsPage";
 import ChatPage         from "./components/chat/ChatPage";
 import AdminUsers       from "./components/admin/AdminUsers";
 import AdminComplaints  from "./components/admin/AdminComplaints";
@@ -37,6 +38,9 @@ function PageRouter() {
     return <VoiceBoxLanding />;
   }
 
+  if (page === "profile")          return <ProfilePage />;
+  if (page === "settings")         return <SettingsPage />;
+
   // Prevent school_admin from accessing non-admin pages
   if (currentUser.role === "school_admin") {
     return page === "admin-users" ? <AdminUsers /> : 
@@ -55,19 +59,10 @@ function PageRouter() {
 }
 
 function Shell() {
-  const { currentUser, loading, logout, updateProfile, changePassword } = useAuth();
-  const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
+  const { currentUser, loading, logout } = useAuth();
+  const { navOpen, setPage, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showTopNotifications, setShowTopNotifications] = useState(false);
-  const [accountTab, setAccountTab] = useState("profile");
-  const [profileForm, setProfileForm] = useState({ firstName: "", lastName: "", regNumber: "" });
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [profileBusy, setProfileBusy] = useState(false);
-  const [passwordBusy, setPasswordBusy] = useState(false);
-  const [profileMessage, setProfileMessage] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState("");
-  const [profileError, setProfileError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const accountMenuRef = useRef(null);
   const notificationsMenuRef = useRef(null);
   
@@ -80,7 +75,6 @@ function Shell() {
 
       if (!clickedAccount) {
         setShowAccountMenu(false);
-        setAccountTab("profile");
       }
 
       if (!clickedNotifications) {
@@ -91,21 +85,6 @@ function Shell() {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    setProfileForm({
-      firstName: currentUser.firstName || "",
-      lastName: currentUser.lastName || "",
-      regNumber: currentUser.regNumber || "",
-    });
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (!showAccountMenu) {
-      setAccountTab("profile");
-    }
-  }, [showAccountMenu]);
   
   if (loading) {
     return (
@@ -213,187 +192,64 @@ function Shell() {
           </button>
 
           {showAccountMenu && (
-            <div style={{ position: "absolute", top: 48, right: 0, width: "min(380px, calc(100vw - 24px))", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 14, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
-              <div style={{ display: "flex", gap: 8, marginBottom: 10, padding: 4, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12 }}>
+            <div style={{ position: "absolute", top: 48, right: 0, width: 220, maxWidth: "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <button
-                  onClick={() => setAccountTab("profile")}
+                  onClick={() => {
+                    setPage("profile");
+                    setShowAccountMenu(false);
+                  }}
                   style={{
-                    ...S.btn,
-                    flex: 1,
-                    fontSize: 11,
-                    padding: "9px 10px",
-                    textAlign: "center",
-                    background: accountTab === "profile" ? "rgba(45,212,191,.16)" : "transparent",
-                    border: accountTab === "profile" ? "1px solid rgba(45,212,191,.38)" : "1px solid transparent",
-                    color: accountTab === "profile" ? "#2DD4BF" : "rgba(255,255,255,.72)",
+                    background: "rgba(255,255,255,.03)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    color: "rgba(255,255,255,.9)",
                     borderRadius: 10,
+                    padding: "9px 10px",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
-                  Profile
+                  👤 Personal Profile
                 </button>
                 <button
-                  onClick={() => setAccountTab("settings")}
+                  onClick={() => {
+                    setPage("settings");
+                    setShowAccountMenu(false);
+                  }}
                   style={{
-                    ...S.btn,
-                    flex: 1,
-                    fontSize: 11,
-                    padding: "9px 10px",
-                    textAlign: "center",
-                    background: accountTab === "settings" ? "rgba(45,212,191,.16)" : "transparent",
-                    border: accountTab === "settings" ? "1px solid rgba(45,212,191,.38)" : "1px solid transparent",
-                    color: accountTab === "settings" ? "#2DD4BF" : "rgba(255,255,255,.72)",
+                    background: "rgba(255,255,255,.03)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    color: "rgba(255,255,255,.9)",
                     borderRadius: 10,
+                    padding: "9px 10px",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
-                  Settings
+                  ⚙ Settings
                 </button>
                 <button
-                  onClick={logout}
+                  onClick={() => {
+                    setShowAccountMenu(false);
+                    logout();
+                  }}
                   style={{
-                    ...S.btn,
-                    flex: 1,
-                    fontSize: 11,
-                    padding: "9px 10px",
-                    textAlign: "center",
+                    marginTop: 4,
                     background: "rgba(239,68,68,.12)",
                     border: "1px solid rgba(239,68,68,.35)",
                     color: "#FCA5A5",
                     borderRadius: 10,
+                    padding: "9px 10px",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
-                  Logout
+                  ⏻ Logout
                 </button>
               </div>
-
-              {accountTab === "profile" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Your Details</div>
-                    <div style={{ display: "grid", gap: 8, fontSize: 11, color: "rgba(255,255,255,.55)" }}>
-                      <div>Unique ID: <span style={{ color: "#FFFFFF" }}>{currentUser?.uniqueId || "—"}</span></div>
-                      <div>Role: <span style={{ color: "#FFFFFF" }}>{currentUser?.role || "—"}</span></div>
-                      {currentUser?.role === "student" && (
-                        <div>Reg Number: <span style={{ color: "#FFFFFF" }}>{currentUser?.regNumber || "—"}</span></div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Edit Profile</div>
-                    {profileError && <div style={{ marginBottom: 8, fontSize: 11, color: "#FCA5A5" }}>{profileError}</div>}
-                    {profileMessage && <div style={{ marginBottom: 8, fontSize: 11, color: "#86efac" }}>{profileMessage}</div>}
-                    <div style={{ display: "grid", gap: 8 }}>
-                      <div>
-                        <label style={{ ...S.label, fontSize: 11 }}>First Name</label>
-                        <input
-                          style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                          value={profileForm.firstName}
-                          onChange={(e) => setProfileForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ ...S.label, fontSize: 11 }}>Last Name</label>
-                        <input
-                          style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                          value={profileForm.lastName}
-                          onChange={(e) => setProfileForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                        />
-                      </div>
-                      {currentUser?.role === "student" && (
-                        <div>
-                          <label style={{ ...S.label, fontSize: 11 }}>Reg Number</label>
-                          <input
-                            style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                            value={profileForm.regNumber}
-                            onChange={(e) => setProfileForm((prev) => ({ ...prev, regNumber: e.target.value }))}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={async () => {
-                        try {
-                          setProfileBusy(true);
-                          setProfileError("");
-                          setProfileMessage("");
-                          const message = await updateProfile({
-                            firstName: profileForm.firstName,
-                            lastName: profileForm.lastName,
-                            regNumber: profileForm.regNumber,
-                          });
-                          setProfileMessage(message);
-                        } catch (error) {
-                          setProfileError(error.message || "Profile update failed.");
-                        } finally {
-                          setProfileBusy(false);
-                        }
-                      }}
-                      disabled={profileBusy}
-                      style={{ ...S.btn, ...S.btnTeal, width: "100%", marginTop: 8, fontSize: 12, padding: "8px 10px", opacity: profileBusy ? 0.8 : 1 }}
-                    >
-                      {profileBusy ? "Saving..." : "Save Profile"}
-                    </button>
-                  </div>
-
-                </div>
-              )}
-
-              {accountTab === "settings" && (
-                <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Change Password</div>
-                  {passwordError && <div style={{ marginBottom: 8, fontSize: 11, color: "#FCA5A5" }}>{passwordError}</div>}
-                  {passwordMessage && <div style={{ marginBottom: 8, fontSize: 11, color: "#86efac" }}>{passwordMessage}</div>}
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <div>
-                      <label style={{ ...S.label, fontSize: 11 }}>Current Password</label>
-                      <input
-                        type="password"
-                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ ...S.label, fontSize: 11 }}>New Password</label>
-                      <input
-                        type="password"
-                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ ...S.label, fontSize: 11 }}>Confirm New Password</label>
-                      <input
-                        type="password"
-                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      try {
-                        setPasswordBusy(true);
-                        setPasswordError("");
-                        setPasswordMessage("");
-                        const message = await changePassword(passwordForm);
-                        setPasswordMessage(message);
-                        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-                      } catch (error) {
-                        setPasswordError(error.message || "Password change failed.");
-                      } finally {
-                        setPasswordBusy(false);
-                      }
-                    }}
-                    disabled={passwordBusy}
-                    style={{ ...S.btn, ...S.btnTeal, width: "100%", marginTop: 8, fontSize: 12, padding: "8px 10px", opacity: passwordBusy ? 0.8 : 1 }}
-                  >
-                    {passwordBusy ? "Updating..." : "Change Password"}
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
