@@ -211,8 +211,8 @@ export default function ChatPage() {
 
         {/* Room list */}
         {(!isMobile || showRooms) && (
-          <div style={{ width: isMobile ? "100%" : 220, flexShrink:0, overflowY:"auto" }}>
-            <div style={{ ...S.card, padding:10 }}>
+          <div style={{ width: isMobile ? "100%" : 220, flexShrink:0, minHeight:0 }}>
+            <div style={{ ...S.card, padding:10, maxHeight: isMobile ? 220 : "100%", overflowY:"auto", overflowX:"hidden" }}>
               {visibleRooms.length > 0 ? (
                 <>
                   {visibleRooms.map(rm => (
@@ -222,7 +222,9 @@ export default function ChatPage() {
                         background: room===rm.id ? "rgba(13,148,136,.13)" : "transparent",
                         borderLeft: room===rm.id ? "2px solid #2DD4BF" : "2px solid transparent",
                         color:      room===rm.id ? "#2DD4BF" : "rgba(255,255,255,.5)",
-                        whiteSpace: "pre",
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
                       }}>
                         {rm.label}
                       </div>

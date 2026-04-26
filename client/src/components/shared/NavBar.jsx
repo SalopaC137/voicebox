@@ -6,7 +6,7 @@ import { roleIcon, rolePillStyle, isAdminRole, getDeptName, getSchoolName } from
 import { ROLE_LABELS } from "../../data/university";
 
 export default function NavBar() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const {
     setPage,
     page,
@@ -138,7 +138,6 @@ export default function NavBar() {
             <span style={{ ...S.pill, ...rolePillStyle(r) }}>{roleIcon(r)} {ROLE_LABELS[r]?.label || r}</span>
             {r === "school_admin" && <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>{getSchoolName(currentUser.school)}</span>}
             {r === "dept_admin"   && <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>{getDeptName(currentUser.department)}</span>}
-            <button onClick={logout} style={{ ...S.btn, ...S.btnDanger, padding:"6px 12px", fontSize:12, width: "100%" }}>⏻ Logout</button>
           </div>
         </>
       )}

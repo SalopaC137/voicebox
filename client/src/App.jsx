@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider,  useApp  } from "./context/AppContext";
 
@@ -53,10 +54,24 @@ function PageRouter() {
 }
 
 function Shell() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, logout } = useAuth();
   const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner } = useApp();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const accountMenuRef = useRef(null);
   
   const isMobile = window.innerWidth < 768;
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!accountMenuRef.current) return;
+      if (!accountMenuRef.current.contains(event.target)) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
   
   if (loading) {
     return (
@@ -85,6 +100,36 @@ function Shell() {
         <PageRouter />
       </div>
 
+      <div ref={accountMenuRef} style={{ position: "fixed", top: 14, right: 14, zIndex: 1300, width: "min(320px, calc(100vw - 24px))" }}>
+        <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden" }}>
+          <button
+            onClick={() => setShowAccountMenu((prev) => !prev)}
+            style={{ width: "100%", background: "transparent", border: "none", padding: "10px 12px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}
+          >
+            <div style={{ minWidth: 0, textAlign: "left" }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {currentUser?.email || "No email"}
+              </div>
+            </div>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,.65)", flexShrink: 0 }}>{showAccountMenu ? "▲" : "▼"}</span>
+          </button>
+
+          {showAccountMenu && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: 8 }}>
+              <button
+                onClick={logout}
+                style={{ width: "100%", background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.45)", color: "#FCA5A5", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+              >
+                ⏻ Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {complaintBanner && (
         <div style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 1300, width: "min(520px, calc(100vw - 24px))" }}>
           <div style={{ background: "rgba(6,78,59,.95)", border: "1px solid rgba(52,211,153,.45)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
@@ -99,7 +144,7 @@ function Shell() {
         </div>
       )}
 
-      <div style={{ position: "fixed", top: 14, right: 14, zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: "min(360px, calc(100vw - 24px))" }}>
+      <div style={{ position: "fixed", top: 90, right: 14, zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: "min(360px, calc(100vw - 24px))" }}>
         {toasts.map((toast) => (
           <div key={toast.id} style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.4)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.25)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
