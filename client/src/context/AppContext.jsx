@@ -39,6 +39,13 @@ export function AppProvider({ children }) {
     }
   };
 
+  const markNotificationsAsRead = async (ids = []) => {
+    const uniqueIds = [...new Set(ids.filter(Boolean).map(String))];
+    if (uniqueIds.length === 0) return;
+
+    await Promise.all(uniqueIds.map((id) => markNotificationAsRead(id)));
+  };
+
   const pushToast = (notification) => {
     const toastId = `${notification._id || "toast"}-${Date.now()}`;
     const toast = {
@@ -186,7 +193,11 @@ export function AppProvider({ children }) {
       .then((res) => {
         const rows = Array.isArray(res.data) ? res.data : [];
         setNotifications(rows);
-        rows.filter((n) => !n.read).slice(0, 3).forEach((n) => pushToast(n));
+        const unreadRows = rows.filter((n) => !n.read);
+        unreadRows.slice(0, 3).forEach((n) => pushToast(n));
+        if (unreadRows.length > 0) {
+          markNotificationsAsRead(unreadRows.map((n) => n._id));
+        }
       })
       .catch((err) => console.error("Failed to fetch notifications:", err));
     } else if (!currentUser && !authLoading) {
@@ -441,7 +452,7 @@ export function AppProvider({ children }) {
       // other real–time updates.
       setUsers,
       addComplaint, updateComplaint, deleteComplaint, addReply, addAdminNote, addMessage,
-      markNotificationAsRead, markAllNotificationsAsRead, dismissToast, dismissComplaintBanner,
+      markNotificationAsRead, markNotificationsAsRead, markAllNotificationsAsRead, dismissToast, dismissComplaintBanner,
       openComplaintFromNotification,
       joinChatRoom, leaveChatRoom,
       page, setPage,

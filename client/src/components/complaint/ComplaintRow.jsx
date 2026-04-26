@@ -29,12 +29,11 @@ export default function ComplaintRow({ c }) {
   const [expanded,  setExpanded]  = useState(false);
   const [replyTxt,  setReplyTxt]  = useState("");
 
-  let statusAction = null;
-  if (c.status === "open" && canMod) {
-    statusAction = { label: "→ Progress", next: "in-progress" };
-  } else if (c.status === "in-progress" && isSubmitter) {
-    statusAction = { label: "→ Resolved", next: "resolved" };
-  }
+  const statusAction = c.status === "open" && canMod
+    ? { label: "→ Progress", next: "in-progress" }
+    : c.status === "in-progress" && isSubmitter
+      ? { label: "→ Resolved", next: "resolved" }
+      : null;
 
   useEffect(() => {
     if (c._forceExpand) {
