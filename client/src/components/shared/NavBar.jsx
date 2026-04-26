@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp }  from "../../context/AppContext";
 import S from "../../utils/styles";
@@ -12,12 +11,7 @@ export default function NavBar() {
     page,
     navOpen,
     setNavOpen,
-    notifications,
-    unreadCount,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
   } = useApp();
-  const [showNotifications, setShowNotifications] = useState(false);
   const r       = currentUser?.role;
   const isAdmin = isAdminRole(r);
   const isStaff = r === "staff";
@@ -33,103 +27,40 @@ export default function NavBar() {
 
   const navStyle = isMobile
     ? navOpen
-      ? { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 10px", height: "100vh", position: "fixed", left: 0, top: 0, width: "100%", transition: "all 0.3s ease", zIndex: 1000, background: "#0A0F1E" }
+      ? { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 12px", height: "100vh", position: "fixed", left: 0, top: 0, width: "100%", transition: "all 0.3s ease", zIndex: 1000, background: "#0A0F1E" }
       : { position: "fixed", top: 10, left: 10, zIndex: 1000, background: "rgba(10,15,30,0.9)", borderRadius: 8, padding: 5 }
-    : { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 10px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "200px" : "60px", transition: "width 0.3s ease" };
+    : { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 12px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "220px" : "64px", transition: "width 0.3s ease" };
+
+  const handleNavigate = (pg) => {
+    setPage(pg);
+    if (isMobile) setNavOpen(false);
+  };
 
   return (
     <div style={navStyle}>
-      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "8px", fontSize: 16, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
+      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "10px", fontSize: 16, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
         {navOpen ? "✕" : "☰"}
       </button>
-
-      {!navOpen && unreadCount > 0 && (
-        <div style={{ marginTop: 8, textAlign: "center", color: "#FCD34D", fontSize: 11, fontWeight: 700 }}>
-          🔔 {unreadCount}
-        </div>
-      )}
 
       {navOpen && (
         <>
           <div style={{ display:"flex", flexDirection: "column", alignItems:"flex-start", gap:16 }}>
-            <div style={S.logo} onClick={() => setPage("dashboard")}>
+            <div style={S.logo} onClick={() => handleNavigate("dashboard")}> 
               <div style={S.logoMark}>📢</div>
               <span style={S.logoTxt}>Voice<span style={{color:"#2DD4BF"}}>Box</span></span>
             </div>
-            <div style={{ display:"flex", flexDirection: "column", gap:3, width: "100%" }}>
+            <div style={{ display:"flex", flexDirection: "column", gap:8, width: "100%" }}>
               {links.map(([icon, label, pg]) => (
-                <button key={pg} onClick={() => setPage(pg)} style={{
-                  ...S.btn, padding:"8px 12px", fontSize:12, width: "100%", textAlign: "left",
+                <button key={pg} onClick={() => handleNavigate(pg)} style={{
+                  ...S.btn, padding:"11px 14px", fontSize:13, width: "100%", textAlign: "left", borderRadius: 12,
                   background: page===pg ? "rgba(13,148,136,.15)" : "transparent",
                   border:     page===pg ? "1px solid rgba(13,148,136,.4)" : "1px solid transparent",
                   color:      page===pg ? "#2DD4BF" : "rgba(255,255,255,.5)",
+                  lineHeight: 1.15,
                 }}>
                   {icon} {label}
                 </button>
               ))}
-            </div>
-
-            <div style={{ width: "100%", marginTop: 4 }}>
-              <button
-                onClick={() => setShowNotifications((prev) => !prev)}
-                style={{
-                  ...S.btn,
-                  width: "100%",
-                  textAlign: "left",
-                  fontSize: 12,
-                  padding: "8px 12px",
-                  background: showNotifications ? "rgba(245,158,11,.14)" : "rgba(255,255,255,.03)",
-                  border: showNotifications ? "1px solid rgba(245,158,11,.4)" : "1px solid rgba(255,255,255,.08)",
-                  color: showNotifications ? "#FCD34D" : "rgba(255,255,255,.75)",
-                }}
-              >
-                🔔 Notifications {unreadCount > 0 ? `(${unreadCount})` : ""}
-              </button>
-
-              {showNotifications && (
-                <div style={{ marginTop: 8, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 10, padding: 8 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,.6)" }}>Recent</span>
-                    <button
-                      onClick={markAllNotificationsAsRead}
-                      style={{ ...S.btn, fontSize: 10, padding: "4px 8px" }}
-                    >
-                      Mark all read
-                    </button>
-                  </div>
-
-                  <div style={{ maxHeight: 230, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
-                    {notifications.slice(0, 12).map((n) => (
-                      <button
-                        key={n._id}
-                        onClick={() => !n.read && markNotificationAsRead(n._id)}
-                        style={{
-                          ...S.btn,
-                          textAlign: "left",
-                          padding: "7px 8px",
-                          borderRadius: 8,
-                          border: n.read ? "1px solid rgba(255,255,255,.08)" : "1px solid rgba(245,158,11,.35)",
-                          background: n.read ? "rgba(255,255,255,.02)" : "rgba(245,158,11,.10)",
-                          color: "rgba(255,255,255,.86)",
-                          fontWeight: n.read ? 500 : 700,
-                          fontSize: 11,
-                        }}
-                      >
-                        <div style={{ marginBottom: 3 }}>{n.message}</div>
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,.45)" }}>
-                          {new Date(n.createdAt).toLocaleString()}
-                        </div>
-                      </button>
-                    ))}
-
-                    {notifications.length === 0 && (
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center", padding: "10px 6px" }}>
-                        No notifications yet.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

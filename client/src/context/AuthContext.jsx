@@ -59,6 +59,37 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateProfile = async (data) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.patch(`${API_BASE}/auth/profile`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCurrentUser(res.data.user);
+      setError(null);
+      return res.data.message;
+    } catch (err) {
+      const msg = err.response?.data?.message || "Profile update failed";
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
+  const changePassword = async (data) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.patch(`${API_BASE}/auth/password`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setError(null);
+      return res.data.message;
+    } catch (err) {
+      const msg = err.response?.data?.message || "Password change failed";
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
 
@@ -70,7 +101,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthCtx.Provider value={{ currentUser, loading, error, login, logout, register }}>
+    <AuthCtx.Provider value={{ currentUser, loading, error, login, logout, register, updateProfile, changePassword }}>
       {children}
     </AuthCtx.Provider>
   );

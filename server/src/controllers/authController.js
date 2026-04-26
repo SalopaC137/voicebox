@@ -159,6 +159,74 @@ exports.getMe = async (req, res) => {
   res.json(req.user);
 };
 
+// PATCH /api/auth/profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, regNumber } = req.body;
+
+    if (!firstName || !lastName) {
+      return res.status(400).json({ message: "First name and last name are required." });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.firstName = firstName.trim();
+    user.lastName = lastName.trim();
+
+    if (user.role === "student" && typeof regNumber !== "undefined") {
+      user.regNumber = regNumber.trim();
+    }
+
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully.",
+      user: { ...user.toObject(), password: undefined },
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PATCH /api/auth/password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "All password fields are required." });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "New password and confirmation do not match." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "New password must be at least 8 characters long." });
+    }
+
+    const user = await User.findById(req.user._id).select("+password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const currentPasswordMatches = await user.comparePassword(currentPassword);
+    if (!currentPasswordMatches) {
+      return res.status(400).json({ message: "Current password is incorrect." });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Password changed successfully." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // POST /api/auth/verify/:token
 exports.verifyEmail = async (req, res) => {
   try {

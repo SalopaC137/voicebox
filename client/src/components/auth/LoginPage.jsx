@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [pass,  setPass]  = useState("");
   const [err,   setErr]   = useState("");
   const [notice, setNotice] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const registerNotice = sessionStorage.getItem("registerNotice");
@@ -20,12 +21,18 @@ export default function LoginPage() {
   }, []);
 
   const tryLogin = async () => {
-    const r = await login(email, pass);
-    if (r === "ok") {
-      setErr("");
-      setPage("dashboard");
-    } else {
-      setErr(r);
+    if (isSubmitting) return;
+    try {
+      setIsSubmitting(true);
+      const r = await login(email, pass);
+      if (r === "ok") {
+        setErr("");
+        setPage("dashboard");
+      } else {
+        setErr(r);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -55,7 +62,22 @@ export default function LoginPage() {
           <div style={{ background:"rgba(16,185,129,.12)", border:"1px solid rgba(16,185,129,.4)", borderRadius:8, padding:"8px 12px", color:"#86efac", fontSize:12, marginBottom:12 }}>{notice}</div>
         )}
 
-        <button style={{ ...S.btn, ...S.btnTeal, ...S.btnFull }} onClick={tryLogin}>Sign In →</button>
+        <button
+          style={{ ...S.btn, ...S.btnTeal, ...S.btnFull, display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:isSubmitting ? 0.8 : 1, cursor:isSubmitting ? "not-allowed" : "pointer" }}
+          onClick={tryLogin}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <span style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,.35)", borderTopColor:"#fff", animation:"loginSpin .7s linear infinite" }} />
+              Signing in...
+            </>
+          ) : (
+            "Sign In →"
+          )}
+        </button>
+
+        <style>{`@keyframes loginSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
         <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
           <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("forgot-password")}>Forgot Password?</span>

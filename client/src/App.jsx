@@ -54,10 +54,19 @@ function PageRouter() {
 }
 
 function Shell() {
-  const { currentUser, loading, logout } = useAuth();
+  const { currentUser, loading, logout, updateProfile, changePassword } = useAuth();
   const { navOpen, toasts, dismissToast, complaintBanner, dismissComplaintBanner, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showTopNotifications, setShowTopNotifications] = useState(false);
+  const [accountTab, setAccountTab] = useState("profile");
+  const [profileForm, setProfileForm] = useState({ firstName: "", lastName: "", regNumber: "" });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const accountMenuRef = useRef(null);
   const notificationsMenuRef = useRef(null);
   
@@ -70,6 +79,7 @@ function Shell() {
 
       if (!clickedAccount) {
         setShowAccountMenu(false);
+        setAccountTab("profile");
       }
 
       if (!clickedNotifications) {
@@ -80,6 +90,21 @@ function Shell() {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setProfileForm({
+      firstName: currentUser.firstName || "",
+      lastName: currentUser.lastName || "",
+      regNumber: currentUser.regNumber || "",
+    });
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!showAccountMenu) {
+      setAccountTab("profile");
+    }
+  }, [showAccountMenu]);
   
   if (loading) {
     return (
@@ -164,7 +189,7 @@ function Shell() {
           )}
         </div>
 
-        <div ref={accountMenuRef} style={{ width: "auto", maxWidth: "calc(100vw - 72px)" }}>
+        <div ref={accountMenuRef} style={{ position: "relative", width: "auto", maxWidth: "calc(100vw - 72px)" }}>
           <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden", display: "inline-block" }}>
           <button
             onClick={() => setShowAccountMenu((prev) => !prev)}
@@ -178,22 +203,197 @@ function Shell() {
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
                   {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
                 </div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
+                  {currentUser?.email || "No email"}
+                </div>
               </div>
             </div>
             <span style={{ fontSize: 12, color: "rgba(255,255,255,.65)", flexShrink: 0 }}>{showAccountMenu ? "▲" : "▼"}</span>
           </button>
 
           {showAccountMenu && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", padding: 8, minWidth: 220 }}>
-              <div style={{ padding: "2px 2px 8px", fontSize: 11, color: "rgba(255,255,255,.62)", borderBottom: "1px solid rgba(255,255,255,.06)", marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {currentUser?.email || "No email"}
+            <div style={{ position: "absolute", top: 48, right: 0, width: "min(380px, calc(100vw - 24px))", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 14, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, padding: 4, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12 }}>
+                <button
+                  onClick={() => setAccountTab("profile")}
+                  style={{
+                    ...S.btn,
+                    flex: 1,
+                    fontSize: 11,
+                    padding: "9px 10px",
+                    textAlign: "center",
+                    background: accountTab === "profile" ? "rgba(45,212,191,.16)" : "transparent",
+                    border: accountTab === "profile" ? "1px solid rgba(45,212,191,.38)" : "1px solid transparent",
+                    color: accountTab === "profile" ? "#2DD4BF" : "rgba(255,255,255,.72)",
+                    borderRadius: 10,
+                  }}
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => setAccountTab("settings")}
+                  style={{
+                    ...S.btn,
+                    flex: 1,
+                    fontSize: 11,
+                    padding: "9px 10px",
+                    textAlign: "center",
+                    background: accountTab === "settings" ? "rgba(45,212,191,.16)" : "transparent",
+                    border: accountTab === "settings" ? "1px solid rgba(45,212,191,.38)" : "1px solid transparent",
+                    color: accountTab === "settings" ? "#2DD4BF" : "rgba(255,255,255,.72)",
+                    borderRadius: 10,
+                  }}
+                >
+                  Settings
+                </button>
+                <button
+                  onClick={logout}
+                  style={{
+                    ...S.btn,
+                    flex: 1,
+                    fontSize: 11,
+                    padding: "9px 10px",
+                    textAlign: "center",
+                    background: "rgba(239,68,68,.12)",
+                    border: "1px solid rgba(239,68,68,.35)",
+                    color: "#FCA5A5",
+                    borderRadius: 10,
+                  }}
+                >
+                  Logout
+                </button>
               </div>
-              <button
-                onClick={logout}
-                style={{ width: "100%", background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.45)", color: "#FCA5A5", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
-              >
-                ⏻ Logout
-              </button>
+
+              {accountTab === "profile" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Your Details</div>
+                    <div style={{ display: "grid", gap: 8, fontSize: 11, color: "rgba(255,255,255,.55)" }}>
+                      <div>Unique ID: <span style={{ color: "#FFFFFF" }}>{currentUser?.uniqueId || "—"}</span></div>
+                      <div>Role: <span style={{ color: "#FFFFFF" }}>{currentUser?.role || "—"}</span></div>
+                      <div>Email: <span style={{ color: "#FFFFFF" }}>{currentUser?.email || "—"}</span></div>
+                      {currentUser?.role === "student" && (
+                        <div>Reg Number: <span style={{ color: "#FFFFFF" }}>{currentUser?.regNumber || "—"}</span></div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Edit Profile</div>
+                    {profileError && <div style={{ marginBottom: 8, fontSize: 11, color: "#FCA5A5" }}>{profileError}</div>}
+                    {profileMessage && <div style={{ marginBottom: 8, fontSize: 11, color: "#86efac" }}>{profileMessage}</div>}
+                    <div style={{ display: "grid", gap: 8 }}>
+                      <div>
+                        <label style={{ ...S.label, fontSize: 11 }}>First Name</label>
+                        <input
+                          style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                          value={profileForm.firstName}
+                          onChange={(e) => setProfileForm((prev) => ({ ...prev, firstName: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ ...S.label, fontSize: 11 }}>Last Name</label>
+                        <input
+                          style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                          value={profileForm.lastName}
+                          onChange={(e) => setProfileForm((prev) => ({ ...prev, lastName: e.target.value }))}
+                        />
+                      </div>
+                      {currentUser?.role === "student" && (
+                        <div>
+                          <label style={{ ...S.label, fontSize: 11 }}>Reg Number</label>
+                          <input
+                            style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                            value={profileForm.regNumber}
+                            onChange={(e) => setProfileForm((prev) => ({ ...prev, regNumber: e.target.value }))}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        try {
+                          setProfileBusy(true);
+                          setProfileError("");
+                          setProfileMessage("");
+                          const message = await updateProfile({
+                            firstName: profileForm.firstName,
+                            lastName: profileForm.lastName,
+                            regNumber: profileForm.regNumber,
+                          });
+                          setProfileMessage(message);
+                        } catch (error) {
+                          setProfileError(error.message || "Profile update failed.");
+                        } finally {
+                          setProfileBusy(false);
+                        }
+                      }}
+                      disabled={profileBusy}
+                      style={{ ...S.btn, ...S.btnTeal, width: "100%", marginTop: 8, fontSize: 12, padding: "8px 10px", opacity: profileBusy ? 0.8 : 1 }}
+                    >
+                      {profileBusy ? "Saving..." : "Save Profile"}
+                    </button>
+                  </div>
+
+                </div>
+              )}
+
+              {accountTab === "settings" && (
+                <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12, padding: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,.55)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Change Password</div>
+                  {passwordError && <div style={{ marginBottom: 8, fontSize: 11, color: "#FCA5A5" }}>{passwordError}</div>}
+                  {passwordMessage && <div style={{ marginBottom: 8, fontSize: 11, color: "#86efac" }}>{passwordMessage}</div>}
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <div>
+                      <label style={{ ...S.label, fontSize: 11 }}>Current Password</label>
+                      <input
+                        type="password"
+                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ ...S.label, fontSize: 11 }}>New Password</label>
+                      <input
+                        type="password"
+                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ ...S.label, fontSize: 11 }}>Confirm New Password</label>
+                      <input
+                        type="password"
+                        style={{ ...S.input, fontSize: 12, padding: "7px 10px" }}
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setPasswordBusy(true);
+                        setPasswordError("");
+                        setPasswordMessage("");
+                        const message = await changePassword(passwordForm);
+                        setPasswordMessage(message);
+                        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                      } catch (error) {
+                        setPasswordError(error.message || "Password change failed.");
+                      } finally {
+                        setPasswordBusy(false);
+                      }
+                    }}
+                    disabled={passwordBusy}
+                    style={{ ...S.btn, ...S.btnTeal, width: "100%", marginTop: 8, fontSize: 12, padding: "8px 10px", opacity: passwordBusy ? 0.8 : 1 }}
+                  >
+                    {passwordBusy ? "Updating..." : "Change Password"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
