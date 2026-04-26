@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [code, setCode] = useState(["","","","","",""]);
   const [err,  setErr]  = useState("");
   const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const needsCode   = role === "school_admin" || role === "dept_admin";
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   const depts       = SCHOOLS.find(s => s.code === form.school)?.departments || [];
 
   const next = async () => {
+    if (isSubmitting) return;
     if (step === 1 && !role) { setErr("Please select a role."); return; }
     if (step === 2) {
       if (!form.firstName || !form.lastName || !form.email || !form.phone) { setErr("Fill all fields."); return; }
@@ -45,6 +47,7 @@ export default function RegisterPage() {
     if (step === 4) {
       if (!form.password || form.password !== form.confirm) { setErr("Passwords don't match."); return; }
       try {
+        setIsSubmitting(true);
         setErr("");
         setSuccess("");
         const regData = { ...form, role };
@@ -60,6 +63,8 @@ export default function RegisterPage() {
       } catch (e) {
         setSuccess("");
         setErr(e.response?.data?.message || "Registration failed. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
       return;
     }
@@ -79,6 +84,7 @@ export default function RegisterPage() {
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#060C18,#0B1820)", padding:20 }}>
+      <style>{`@keyframes registerSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <div style={{ width:560, background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:22, padding:34 }}>
 
         {/* Header */}
@@ -280,8 +286,22 @@ export default function RegisterPage() {
         )}
 
         <div style={{ display:"flex", gap:9, marginTop:18 }}>
-          {step > 1 && <button style={{ ...S.btn, ...S.btnGhost, flex:1 }} onClick={() => { setErr(""); setStep(s=>s-1); }}>← Back</button>}
-          <button style={{ ...S.btn, ...S.btnTeal, flex:2 }} onClick={next}>{step===4?"Create Account ✓":"Continue →"}</button>
+          {step > 1 && <button style={{ ...S.btn, ...S.btnGhost, flex:1, opacity:isSubmitting?.65:1, cursor:isSubmitting?"not-allowed":"pointer" }} disabled={isSubmitting} onClick={() => { setErr(""); setStep(s=>s-1); }}>← Back</button>}
+          <button
+            style={{ ...S.btn, ...S.btnTeal, flex:2, opacity:isSubmitting?.75:1, cursor:isSubmitting?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+            onClick={next}
+            disabled={isSubmitting}
+          >
+            {step === 4 && isSubmitting ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  style={{ width:14, height:14, borderRadius:"50%", border:"2px solid rgba(255,255,255,.35)", borderTopColor:"#fff", animation:"registerSpin .7s linear infinite" }}
+                />
+                Creating Account...
+              </>
+            ) : step===4?"Create Account ✓":"Continue →"}
+          </button>
         </div>
         <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
           Already registered? <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("login")}>Sign in</span>
