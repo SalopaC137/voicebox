@@ -12,6 +12,7 @@ const chatRoutes       = require("./routes/chat");
 const notificationRoutes = require("./routes/notifications");
 const registerSocket   = require("./utils/socket");
 const { initializeCounters } = require("./controllers/authController");
+const { sendVerificationEmail } = require("./utils/sendEmail");
 
 mongoose.set("bufferCommands", false);
 
@@ -69,6 +70,20 @@ app.use("/api/chat",       chatRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok", ts: new Date() }));
+
+app.get("/test-email", async (req, res) => {
+  try {
+    const to = req.query.to || process.env.EMAIL_USER;
+    if (!to) {
+      return res.status(400).json({ message: "Missing recipient. Add ?to=email@example.com or set EMAIL_USER." });
+    }
+
+    await sendVerificationEmail(to, "test-token");
+    return res.json({ message: `Email test sent to ${to}` });
+  } catch (err) {
+    return res.status(500).json({ message: err.message || "Failed to send test email." });
+  }
+});
 
 // ── Socket.io ────────────────────────────────────────────────
 registerSocket(io);

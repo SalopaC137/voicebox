@@ -1,27 +1,32 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-let resend = null;
-const FROM_EMAIL = "VoiceBox <onboarding@resend.dev>";
+let transporter = null;
 
-function getResendClient() {
-  if (!process.env.RESEND_API_KEY) return null;
-  if (!resend) {
-    resend = new Resend(process.env.RESEND_API_KEY);
+function getTransporter() {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return null;
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
   }
-  return resend;
+  return transporter;
 }
 
 const sendResetEmail = async (email, link) => {
-  const resendClient = getResendClient();
-  if (!resendClient) {
-    console.warn("[Email] Skipping reset email: RESEND_API_KEY is not set.");
+  const mailer = getTransporter();
+  if (!mailer) {
+    console.warn("[Email] Skipping reset email: EMAIL_USER or EMAIL_PASS is not set.");
     return;
   }
 
   console.log("Sending reset email to:", email, "with link:", link);
 
-  await resendClient.emails.send({
-    from: FROM_EMAIL,
+  await mailer.sendMail({
+    from: `VoiceBox <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Reset your password",
     text: `Reset your password: ${link}\n\nThis link expires in 15 minutes. If you did not request this, ignore this email.`,
