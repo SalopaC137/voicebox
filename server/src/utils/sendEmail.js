@@ -31,15 +31,19 @@ const sendVerificationEmail = async (email, token) => {
     from: `VoiceBox <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Verify your VoiceBox account",
-    text: `Confirm your email: ${verificationLink}\n\nThis link expires in 24 hours. If you did not create this account, ignore this email.`,
+    text: `Welcome to VoiceBox. Confirm your email by opening this link: ${verificationLink}\n\nThis verification link expires in 24 hours.\nIf you do not see this email in your inbox, check your spam or junk folder.\n\nIf you did not create this account, you can ignore this email.`,
     html: `
       <body style="font-family:Arial,sans-serif;background:#f9fafb;">
         <div style="max-width:480px;margin:0 auto;padding:24px 16px;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
-          <p style="margin:0 0 16px;font-size:14px;color:#111827;">Confirm your email address:</p>
+          <p style="margin:0 0 10px;font-size:16px;font-weight:700;color:#111827;">Welcome to VoiceBox</p>
+          <p style="margin:0 0 16px;font-size:14px;color:#111827;">Please confirm your email address to complete your account setup.</p>
           <div style="margin:0 0 16px;">
             <a href="${verificationLink}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:8px 14px;border-radius:6px;font-size:14px;">Confirm Email</a>
           </div>
-          <p style="margin:0;font-size:12px;color:#6b7280;">Link expires in 24 hours. Ignore if not requested.</p>
+          <p style="margin:0 0 8px;font-size:12px;color:#6b7280;">This verification link expires in 24 hours.</p>
+          <p style="margin:0 0 8px;font-size:12px;color:#6b7280;">If the button does not work, use this link:</p>
+          <p style="margin:0 0 10px;font-size:12px;word-break:break-all;"><a href="${verificationLink}" style="color:#2563eb;">${verificationLink}</a></p>
+          <p style="margin:0;font-size:12px;color:#6b7280;">If you did not create this account, you can ignore this email. If missing from inbox, check spam/junk.</p>
         </div>
       </body>
     `

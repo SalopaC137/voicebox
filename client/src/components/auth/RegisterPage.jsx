@@ -85,17 +85,17 @@ export default function RegisterPage() {
   return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#060C18,#0B1820)", padding:20 }}>
       <style>{`@keyframes registerSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      <div style={{ width:560, background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:22, padding:34 }}>
+      <div style={{ width:640, maxWidth:"calc(100vw - 28px)", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:22, padding:40 }}>
 
         {/* Header */}
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:24 }}>
           <div style={S.logoMark}>📢</div>
           <span style={S.logoTxt}>Voice<span style={{color:"#2DD4BF"}}>Box</span> — Register</span>
           <span style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,.3)" }}>Step {step}/4</span>
         </div>
 
         {/* Step indicator */}
-        <div style={{ display:"flex", alignItems:"center", marginBottom:22 }}>
+        <div style={{ display:"flex", alignItems:"center", marginBottom:26 }}>
           {steps.map((s, i) => (
             <div key={i} style={{ display:"flex", alignItems:"center", flex:i<3?1:"auto" }}>
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
