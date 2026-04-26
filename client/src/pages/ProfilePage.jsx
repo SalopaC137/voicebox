@@ -37,7 +37,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div style={{ ...S.page }}>
+    <div style={{ ...S.page, maxWidth: 760, margin: "0", width: "100%" }}>
       <div style={{ fontSize: 20, fontWeight: 900, color: "white", marginBottom: 12 }}>👤 Personal Profile</div>
 
       <div style={{ ...S.card, marginBottom: 14 }}>
