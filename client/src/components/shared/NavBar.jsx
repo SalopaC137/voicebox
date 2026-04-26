@@ -27,9 +27,9 @@ export default function NavBar() {
 
   const navStyle = isMobile
     ? navOpen
-      ? { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 12px", height: "100vh", position: "fixed", left: 0, top: 0, width: "100%", transition: "all 0.3s ease", zIndex: 1000, background: "#0A0F1E" }
+      ? { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 14px", height: "100vh", position: "fixed", left: 0, top: 0, width: "100%", transition: "all 0.3s ease", zIndex: 1000, background: "#0A0F1E" }
       : { position: "fixed", top: 10, left: 10, zIndex: 1000, background: "rgba(10,15,30,0.9)", borderRadius: 8, padding: 5 }
-    : { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 20, padding: "20px 12px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "220px" : "64px", transition: "width 0.3s ease" };
+    : { ...S.nav, flexDirection: "column", alignItems: "stretch", gap: 22, padding: "20px 14px", height: "100vh", position: "fixed", left: 0, top: 0, width: navOpen ? "240px" : "72px", transition: "width 0.3s ease" };
 
   const handleNavigate = (pg) => {
     setPage(pg);
@@ -38,21 +38,22 @@ export default function NavBar() {
 
   return (
     <div style={navStyle}>
-      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "10px", fontSize: 16, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
+      <button onClick={() => setNavOpen(!navOpen)} style={{ ...S.btn, padding: "12px", fontSize: 17, width: isMobile ? "100%" : "100%", textAlign: "center" }}>
         {navOpen ? "✕" : "☰"}
       </button>
 
       {navOpen && (
         <>
-          <div style={{ display:"flex", flexDirection: "column", alignItems:"flex-start", gap:16 }}>
+          <div style={{ display:"flex", flexDirection: "column", alignItems:"flex-start", gap:18 }}>
             <div style={S.logo} onClick={() => handleNavigate("dashboard")}> 
               <div style={S.logoMark}>📢</div>
               <span style={S.logoTxt}>Voice<span style={{color:"#2DD4BF"}}>Box</span></span>
             </div>
-            <div style={{ display:"flex", flexDirection: "column", gap:8, width: "100%" }}>
+            <div style={{ display:"flex", flexDirection: "column", gap:10, width: "100%" }}>
               {links.map(([icon, label, pg]) => (
                 <button key={pg} onClick={() => handleNavigate(pg)} style={{
-                  ...S.btn, padding:"11px 14px", fontSize:13, width: "100%", textAlign: "left", borderRadius: 12,
+                  ...S.btn, padding:"13px 16px", fontSize:14, width: "100%", textAlign: "left", borderRadius: 14,
+                  minHeight: 46,
                   background: page===pg ? "rgba(13,148,136,.15)" : "transparent",
                   border:     page===pg ? "1px solid rgba(13,148,136,.4)" : "1px solid transparent",
                   color:      page===pg ? "#2DD4BF" : "rgba(255,255,255,.5)",

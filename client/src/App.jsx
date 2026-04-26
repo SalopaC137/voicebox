@@ -271,7 +271,6 @@ function Shell() {
                     <div style={{ display: "grid", gap: 8, fontSize: 11, color: "rgba(255,255,255,.55)" }}>
                       <div>Unique ID: <span style={{ color: "#FFFFFF" }}>{currentUser?.uniqueId || "—"}</span></div>
                       <div>Role: <span style={{ color: "#FFFFFF" }}>{currentUser?.role || "—"}</span></div>
-                      <div>Email: <span style={{ color: "#FFFFFF" }}>{currentUser?.email || "—"}</span></div>
                       {currentUser?.role === "student" && (
                         <div>Reg Number: <span style={{ color: "#FFFFFF" }}>{currentUser?.regNumber || "—"}</span></div>
                       )}
