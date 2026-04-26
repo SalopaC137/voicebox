@@ -1,7 +1,7 @@
 const { Resend } = require("resend");
 
 let resend = null;
-const FROM_EMAIL = "VoiceBox <support@voicebox.qzz.io>";
+const FROM_EMAIL = "VoiceBox <onboarding@resend.dev>";
 
 function getResendClient() {
   if (!process.env.RESEND_API_KEY) return null;
@@ -25,7 +25,7 @@ const sendVerificationEmail = async (email, token) => {
   await resendClient.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: "Confirm your email address",
+    subject: "Verify your VoiceBox account",
     text: `Confirm your email: ${verificationLink}\n\nThis link expires in 24 hours. If you did not create this account, ignore this email.`,
     html: `
       <body style="font-family:Arial,sans-serif;background:#f9fafb;">
