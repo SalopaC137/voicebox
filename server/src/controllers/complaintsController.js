@@ -261,17 +261,6 @@ exports.updateStatus = async (req, res) => {
       if (!isSubmitter) {
         return res.status(403).json({ message: "Only the complaint initiator can mark as resolved." });
       }
-      const hasReceiverReply = Array.isArray(c.replies) && c.replies.some((reply) => {
-        const senderId = String(reply.senderId || "");
-        return senderId === String(c.targetLecturerId) || reply.senderRole === "dept_admin";
-      });
-      const canResolveNow = currentStatus === "in-progress" || (currentStatus === "open" && hasReceiverReply);
-      if (!canResolveNow) {
-        return res.status(400).json({ message: "Complaint can only be resolved after it is in progress." });
-      }
-      if (currentStatus === "open" && hasReceiverReply) {
-        c.status = "in-progress";
-      }
     }
 
     c.status = requestedStatus;
