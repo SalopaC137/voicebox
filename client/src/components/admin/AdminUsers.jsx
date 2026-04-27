@@ -15,6 +15,7 @@ export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [showSuspended, setShowSuspended] = useState(false);
+  const [suspendingId, setSuspendingId] = useState(null);
 
 
   const suspendUser = async (id, value) => {
@@ -23,22 +24,23 @@ export default function AdminUsers() {
     if (!window.confirm(`Are you sure you want to ${verb} this user?`)) return;
 
     try {
+      setSuspendingId(id);
       const token = localStorage.getItem("token");
-      await axios.patch(`${API_BASE}/users/${id}/suspend`, { isSuspended: value }, {
+      const res = await axios.patch(`${API_BASE}/users/${id}/suspend`, { isSuspended: value }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // update local list so UI reflects the change instantly
-      if (value) {
-        if (showSuspended) {
-          setUsers(prev => prev.map(u => u._id === id ? { ...u, isSuspended: true } : u));
-        } else {
-          setUsers(prev => prev.filter(u => u._id !== id));
-        }
-      } else {
-        setUsers(prev => prev.map(u => u._id === id ? { ...u, isSuspended: false } : u));
+      const updated = res.data?.user;
+      if (updated) {
+        setUsers(prev => prev.map(u => u._id === id ? updated : u));
+      }
+      if (value && !showSuspended) {
+        setUsers(prev => prev.filter(u => u._id !== id));
       }
     } catch (err) {
       console.error("Failed to suspend user:", err);
+      alert(err.response?.data?.message || "Failed to update suspension state.");
+    } finally {
+      setSuspendingId(null);
     }
   };
 
@@ -82,7 +84,7 @@ export default function AdminUsers() {
   }[r]||"white");
 
   return (
-    <div style={S.page}>
+    <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <div>
           <div style={{ fontSize:19, fontWeight:800, color:"white" }}>👥 {scopeTitle}</div>
@@ -90,7 +92,6 @@ export default function AdminUsers() {
             Showing users in your {currentUser.role==="school_admin"?"school":"department"} only
           </div>
         </div>
-        <button onClick={() => setPage("register")} style={{ ...S.btn, ...S.btnTeal }}>+ Add User</button>
       </div>
 
       {/* Stats */}
@@ -110,6 +111,10 @@ export default function AdminUsers() {
 
       <div style={{marginBottom:14}}>
         <input style={S.input} value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search by name, email, or UID..." />
+      </div>
+
+      <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}>
+        <button onClick={() => setPage("register")} style={{ ...S.btn, ...S.btnTeal }}>+ Add User</button>
       </div>
 
       <div style={{ marginBottom: 16, fontSize: 12 }}>
@@ -158,8 +163,8 @@ export default function AdminUsers() {
                 ...(u.isSuspended
                   ? { background:"rgba(16,185,129,.14)", border:"1px solid rgba(16,185,129,.3)", color:"#6EE7B7" }
                   : S.btnDanger)
-              }}>
-                {u.isSuspended ? "Restore" : "Suspend"}
+              }} disabled={suspendingId === uid}>
+                {suspendingId === uid ? "Saving..." : u.isSuspended ? "Restore" : "Suspend"}
               </button>
             </div>
           </div>

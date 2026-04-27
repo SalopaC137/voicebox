@@ -90,6 +90,39 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const requestDeleteAccountCode = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${API_BASE}/auth/delete-account/code`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setError(null);
+      return res.data.message;
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to send deletion code";
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
+  const deleteAccount = async (code) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${API_BASE}/auth/delete-account`, { code }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.removeItem("token");
+      await syncOneSignalUser(null);
+      setCurrentUser(null);
+      setError(null);
+      return res.data.message;
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to delete account";
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
 
@@ -101,7 +134,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthCtx.Provider value={{ currentUser, loading, error, login, logout, register, updateProfile, changePassword }}>
+    <AuthCtx.Provider value={{ currentUser, loading, error, login, logout, register, updateProfile, changePassword, requestDeleteAccountCode, deleteAccount }}>
       {children}
     </AuthCtx.Provider>
   );

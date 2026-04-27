@@ -2,7 +2,7 @@ const jwt  = require("jsonwebtoken");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const User = require("../models/User");
-const { sendVerificationEmail } = require("../utils/sendEmail");
+const { sendVerificationEmail, sendAccountDeletionCodeEmail } = require("../utils/sendEmail");
 const { sendResetEmail } = require("../utils/sendResetEmail");
 
 // ── UID counters (initialized from DB on startup) ──
@@ -162,7 +162,7 @@ exports.getMe = async (req, res) => {
 // PATCH /api/auth/profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, regNumber } = req.body;
+    const { firstName, lastName, regNumber, yearOfStudy, programType } = req.body;
 
     if (!firstName || !lastName) {
       return res.status(400).json({ message: "First name and last name are required." });
@@ -180,12 +180,94 @@ exports.updateProfile = async (req, res) => {
       user.regNumber = regNumber.trim();
     }
 
+    if (user.role === "student" && typeof yearOfStudy !== "undefined") {
+      const yearNum = Number(yearOfStudy);
+      if (![1, 2, 3, 4].includes(yearNum)) {
+        return res.status(400).json({ message: "Year of study must be between 1 and 4." });
+      }
+      user.yearOfStudy = yearNum;
+    }
+
+    if (user.role === "student" && typeof programType !== "undefined") {
+      if (!["degree", "diploma"].includes(programType)) {
+        return res.status(400).json({ message: "Program type must be degree or diploma." });
+      }
+      if (programType === "diploma" && Number(user.yearOfStudy || 0) > 3) {
+        return res.status(400).json({ message: "Diploma students can only be in years 1 to 3." });
+      }
+      user.programType = programType;
+    }
+
+    if (user.role === "student" && user.programType === "diploma" && Number(user.yearOfStudy || 0) > 3) {
+      return res.status(400).json({ message: "Diploma students can only be in years 1 to 3." });
+    }
+
     await user.save();
 
     res.json({
       message: "Profile updated successfully.",
       user: { ...user.toObject(), password: undefined },
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/delete-account/code
+exports.requestDeleteAccountCode = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+
+    user.deletionCodeHash = codeHash;
+    user.deletionCodeExpire = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendAccountDeletionCodeEmail(user.email, code);
+
+    res.json({ message: "Verification code sent to your email." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/delete-account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code || !/^\d{4}$/.test(String(code))) {
+      return res.status(400).json({ message: "A valid 4-digit code is required." });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (!user.deletionCodeHash || !user.deletionCodeExpire || user.deletionCodeExpire < new Date()) {
+      return res.status(400).json({ message: "Code expired. Request a new code." });
+    }
+
+    const incomingHash = crypto.createHash("sha256").update(String(code)).digest("hex");
+    if (incomingHash !== user.deletionCodeHash) {
+      return res.status(400).json({ message: "Invalid deletion code." });
+    }
+
+    await User.deleteOne({ _id: user._id });
+
+    const io = req.app?.locals?.io;
+    if (io) {
+      io.to(`user:${user._id}`).emit("force-logout", {
+        message: "Your account has been deleted.",
+      });
+    }
+
+    res.json({ message: "Account deleted successfully." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

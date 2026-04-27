@@ -8,7 +8,7 @@ import { ROLE_LABELS } from "../../data/university";
 
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
-export default function ComplaintRow({ c, onExpandChange }) {
+export default function ComplaintRow({ c }) {
   const { users }                                  = useApp();
   const { updateComplaint, deleteComplaint, addReply } = useApp();
   const { currentUser } = useAuth();
@@ -28,6 +28,8 @@ export default function ComplaintRow({ c, onExpandChange }) {
 
   const [expanded,  setExpanded]  = useState(false);
   const [replyTxt,  setReplyTxt]  = useState("");
+  const [resolving, setResolving] = useState(false);
+  const [resolveErr, setResolveErr] = useState("");
 
   const currentStatus = normalizeComplaintStatus(c.status);
   const statusAction = currentStatus === "open" && canMod
@@ -39,12 +41,6 @@ export default function ComplaintRow({ c, onExpandChange }) {
       setExpanded(true);
     }
   }, [c._forceExpand]);
-
-  useEffect(() => {
-    if (onExpandChange) {
-      onExpandChange(expanded);
-    }
-  }, [expanded, onExpandChange]);
 
   const handleExpand = () => {
     setExpanded(p => !p);
@@ -66,6 +62,19 @@ export default function ComplaintRow({ c, onExpandChange }) {
       message:    replyTxt,
     });
     setReplyTxt("");
+  };
+
+  const resolveComplaint = async () => {
+    try {
+      setResolving(true);
+      setResolveErr("");
+      await updateComplaint(c._id, { status: "resolved" });
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Failed to resolve complaint.";
+      setResolveErr(msg);
+    } finally {
+      setResolving(false);
+    }
   };
 
   return (
@@ -194,6 +203,33 @@ export default function ComplaintRow({ c, onExpandChange }) {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {isSubmitter && (currentStatus === "in-progress" || currentStatus === "resolved") && (
+            <div style={{ marginBottom:10 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(16,185,129,.6)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>
+                ✅ Resolution Confirmation
+              </div>
+              {resolveErr && (
+                <div style={{ fontSize:11, color:"#fca5a5", marginBottom:6 }}>{resolveErr}</div>
+              )}
+              <button
+                onClick={resolveComplaint}
+                disabled={currentStatus === "resolved" || resolving}
+                style={{
+                  ...S.btn,
+                  padding:"8px 12px",
+                  fontSize:12,
+                  background: currentStatus === "resolved" ? "rgba(107,114,128,.25)" : "rgba(16,185,129,.18)",
+                  border: currentStatus === "resolved" ? "1px solid rgba(107,114,128,.45)" : "1px solid rgba(16,185,129,.45)",
+                  color: currentStatus === "resolved" ? "#D1D5DB" : "#6EE7B7",
+                  cursor: currentStatus === "resolved" || resolving ? "default" : "pointer",
+                  opacity: resolving ? 0.7 : 1,
+                }}
+              >
+                {resolving ? "Resolving..." : currentStatus === "resolved" ? "Resolved" : "Mark as Resolved"}
+              </button>
             </div>
           )}
 

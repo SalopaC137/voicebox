@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import S from "../utils/styles";
+import { YEAR_OF_STUDY } from "../data/university";
 
 export default function ProfilePage() {
   const { currentUser, updateProfile } = useAuth();
-  const [form, setForm] = useState({ firstName: "", lastName: "", regNumber: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", regNumber: "", yearOfStudy: "", programType: "degree" });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -15,6 +16,8 @@ export default function ProfilePage() {
       firstName: currentUser.firstName || "",
       lastName: currentUser.lastName || "",
       regNumber: currentUser.regNumber || "",
+      yearOfStudy: currentUser.yearOfStudy ? String(currentUser.yearOfStudy) : "",
+      programType: currentUser.programType || "degree",
     });
   }, [currentUser]);
 
@@ -27,6 +30,8 @@ export default function ProfilePage() {
         firstName: form.firstName,
         lastName: form.lastName,
         regNumber: form.regNumber,
+        yearOfStudy: form.yearOfStudy ? Number(form.yearOfStudy) : null,
+        programType: form.programType,
       });
       setMessage(resMessage || "Profile updated.");
     } catch (e) {
@@ -82,12 +87,42 @@ export default function ProfilePage() {
 
         {currentUser?.role === "student" && (
           <div style={{ marginBottom: 10 }}>
-            <label style={S.label}>Registration Number</label>
-            <input
-              style={S.input}
-              value={form.regNumber}
-              onChange={(e) => setForm((prev) => ({ ...prev, regNumber: e.target.value }))}
-            />
+            <div style={{ marginBottom: 10 }}>
+              <label style={S.label}>Registration Number</label>
+              <input
+                style={S.input}
+                value={form.regNumber}
+                onChange={(e) => setForm((prev) => ({ ...prev, regNumber: e.target.value }))}
+              />
+            </div>
+
+            <div style={{ ...S.g2 }}>
+              <div>
+                <label style={S.label}>Year of Study</label>
+                <select
+                  style={S.select}
+                  value={form.yearOfStudy}
+                  onChange={(e) => setForm((prev) => ({ ...prev, yearOfStudy: e.target.value }))}
+                >
+                  <option value="">Select year</option>
+                  {YEAR_OF_STUDY.map((year) => (
+                    <option key={year.value} value={String(year.value)}>{year.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={S.label}>Program Type</label>
+                <select
+                  style={S.select}
+                  value={form.programType}
+                  onChange={(e) => setForm((prev) => ({ ...prev, programType: e.target.value }))}
+                >
+                  <option value="degree">Degree</option>
+                  <option value="diploma">Diploma</option>
+                </select>
+              </div>
+            </div>
           </div>
         )}
 

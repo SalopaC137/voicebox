@@ -50,4 +50,30 @@ const sendVerificationEmail = async (email, token) => {
   });
 };
 
-module.exports = { sendVerificationEmail };
+const sendAccountDeletionCodeEmail = async (email, code) => {
+  const mailer = getTransporter();
+  if (!mailer) {
+    console.warn("[Email] Skipping deletion code email: EMAIL_USER or EMAIL_PASS is not set.");
+    return;
+  }
+
+  await mailer.sendMail({
+    from: `VoiceBox <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "VoiceBox Account Deletion Code",
+    text: `Use this 4-digit code to delete your VoiceBox account: ${code}\n\nThis code expires in 10 minutes. If you did not request account deletion, ignore this email.`,
+    html: `
+      <body style="font-family:Arial,sans-serif;background:#f9fafb;">
+        <div style="max-width:480px;margin:0 auto;padding:24px 16px;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
+          <p style="margin:0 0 10px;font-size:16px;font-weight:700;color:#111827;">Delete Account Confirmation</p>
+          <p style="margin:0 0 14px;font-size:14px;color:#111827;">Use the code below to confirm account deletion.</p>
+          <div style="margin:0 0 14px;font-size:28px;font-weight:800;letter-spacing:6px;color:#b91c1c;">${code}</div>
+          <p style="margin:0 0 8px;font-size:12px;color:#6b7280;">This code expires in 10 minutes.</p>
+          <p style="margin:0;font-size:12px;color:#6b7280;">If you did not request this, ignore this email and keep your account.</p>
+        </div>
+      </body>
+    `,
+  });
+};
+
+module.exports = { sendVerificationEmail, sendAccountDeletionCodeEmail };
