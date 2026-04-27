@@ -32,9 +32,7 @@ export default function ComplaintRow({ c }) {
   const currentStatus = normalizeComplaintStatus(c.status);
   const statusAction = currentStatus === "open" && canMod
     ? { label: "→ Progress", next: "in-progress" }
-    : currentStatus === "in-progress" && isSubmitter
-      ? { label: "→ Resolved", next: "resolved" }
-      : null;
+    : null;
 
   useEffect(() => {
     if (c._forceExpand) {
@@ -180,6 +178,29 @@ export default function ComplaintRow({ c }) {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {isSubmitter && (currentStatus === "in-progress" || currentStatus === "resolved") && (
+            <div style={{ marginBottom:12 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(16,185,129,.6)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>
+                ✅ Resolution Confirmation
+              </div>
+              <button
+                onClick={() => currentStatus === "in-progress" && updateComplaint(c._id, { status: "resolved" })}
+                disabled={currentStatus === "resolved"}
+                style={{
+                  ...S.btn,
+                  padding:"8px 12px",
+                  fontSize:12,
+                  background: currentStatus === "resolved" ? "rgba(107,114,128,.25)" : "rgba(16,185,129,.18)",
+                  border: currentStatus === "resolved" ? "1px solid rgba(107,114,128,.45)" : "1px solid rgba(16,185,129,.45)",
+                  color: currentStatus === "resolved" ? "#D1D5DB" : "#6EE7B7",
+                  cursor: currentStatus === "resolved" ? "default" : "pointer",
+                }}
+              >
+                {currentStatus === "resolved" ? "Resolved" : "Mark as Resolved"}
+              </button>
             </div>
           )}
 

@@ -95,14 +95,15 @@ export default function AdminComplaints() {
     : `${getDeptName(currentUser.department)} — Complaints`;
 
   return (
-    <div style={S.page}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
-        <div>
-          <div style={{ fontSize:19, fontWeight:800, color:"white" }}>📋 {scopeTitle}</div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
-            Restricted to your {currentUser.role==="school_admin"?"school":"department"}
-          </div>
+    <div style={{ ...S.page, paddingTop: 58 }}>
+      <div style={{ marginBottom:14 }}>
+        <div style={{ fontSize:19, fontWeight:800, color:"white" }}>📋 {scopeTitle}</div>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
+          Restricted to your {currentUser.role==="school_admin"?"school":"department"}
         </div>
+      </div>
+
+      <div style={{ display:"flex", justifyContent:"flex-start", marginBottom:16 }}>
         <button onClick={() => setShowReport(p=>!p)} style={{ ...S.btn, ...(showReport?S.btnAmber:S.btnGhost), fontSize:12 }}>
           📊 {showReport?"Hide":"Generate"} Report
         </button>

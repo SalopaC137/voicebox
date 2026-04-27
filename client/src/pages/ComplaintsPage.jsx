@@ -37,7 +37,7 @@ export default function ComplaintsPage() {
   }, [selectedComplaintId]);
 
   return (
-    <div style={S.page}>
+    <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <div style={{ fontSize:19, fontWeight:800, color:"white" }}>
           {isDeptAdmin ? (tab === "personal" ? "📥 Personal Inbox" : "📊 Department Complaints") : isStaff ? "📥 Inbox — Directed to Me" : "📋 My Complaints"}
