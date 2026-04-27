@@ -26,6 +26,7 @@ export default function AdminComplaints() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState("");
   const [reportData, setReportData] = useState(null);
+  const [pdfExporting, setPdfExporting] = useState(false);
   const [noteMap,      setNoteMap]      = useState({});
   const [noteOpen,     setNoteOpen]     = useState({});
 
@@ -71,6 +72,86 @@ export default function AdminComplaints() {
     : visible.reduce((a,c)=>{a[c.priority]=(a[c.priority]||0)+1;return a;},{});
   const byDept   = deptOptions.map(d => ({ ...d, count:visible.filter(c=>c.targetDept===d.code).length }));
 
+  const downloadReportPdf = async () => {
+    if (!reportData && !visible.length) return;
+
+    try {
+      setPdfExporting(true);
+      const [{ default: JsPdf }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
+
+      const doc = new JsPdf();
+      const generatedAt = new Date();
+      const reportScope = currentUser.role === "school_admin"
+        ? `${getSchoolName(currentUser.school)} (School)`
+        : `${getDeptName(currentUser.department)} (Department)`;
+
+      doc.setFontSize(16);
+      doc.text("VoiceBox Cumulative Complaints Report", 14, 16);
+      doc.setFontSize(10);
+      doc.text(`Scope: ${reportScope}`, 14, 24);
+      doc.text(`Generated: ${generatedAt.toLocaleString()}`, 14, 30);
+
+      autoTable(doc, {
+        startY: 36,
+        head: [["Metric", "Value"]],
+        body: [
+          ["Total", String(total)],
+          ["Open", String(open)],
+          ["In Progress", String(inProg)],
+          ["Resolved", String(resolved)],
+          ["Resolution Rate", `${resolRate}%`],
+        ],
+        theme: "grid",
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [13, 148, 136] },
+      });
+
+      const byCategoryRows = Object.entries(byCat).map(([key, count]) => [key, String(count)]);
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 8,
+        head: [["By Category", "Count"]],
+        body: byCategoryRows.length ? byCategoryRows : [["No data", "0"]],
+        theme: "striped",
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [139, 92, 246] },
+      });
+
+      const byPriorityRows = Object.entries(byPri).map(([key, count]) => [key, String(count)]);
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 8,
+        head: [["By Priority", "Count"]],
+        body: byPriorityRows.length ? byPriorityRows : [["No data", "0"]],
+        theme: "striped",
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [245, 158, 11] },
+      });
+
+      if (currentUser.role === "school_admin") {
+        const byDeptRows = byDept.filter(d => d.count > 0).map((d) => [d.name, String(d.count)]);
+        autoTable(doc, {
+          startY: doc.lastAutoTable.finalY + 8,
+          head: [["By Department", "Count"]],
+          body: byDeptRows.length ? byDeptRows : [["No data", "0"]],
+          theme: "striped",
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [59, 130, 246] },
+        });
+      }
+
+      const safeScope = reportScope.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+      const fileName = `voicebox-report-${safeScope}-${generatedAt.toISOString().slice(0, 10)}.pdf`;
+      doc.save(fileName);
+    } catch (err) {
+      console.error("Failed to export PDF:", err);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
   const sendNote = (cid) => {
     const text = noteMap[cid]; if (!text?.trim()) return;
     addAdminNote(cid, {
@@ -112,7 +193,23 @@ export default function AdminComplaints() {
       {/* ── Report Panel ── */}
       {showReport && (
         <div style={{ ...S.card, marginBottom:18, background:"rgba(245,158,11,.03)", border:"1px solid rgba(245,158,11,.18)" }}>
-          <div style={{ fontSize:14, fontWeight:800, color:"#FCD34D", marginBottom:14 }}>📊 {scopeTitle} Report</div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, marginBottom:14 }}>
+            <div style={{ fontSize:14, fontWeight:800, color:"#FCD34D" }}>📊 {scopeTitle} Report</div>
+            <button
+              onClick={downloadReportPdf}
+              disabled={reportLoading || !!reportError || pdfExporting}
+              style={{
+                ...S.btn,
+                ...S.btnBlue,
+                padding:"6px 10px",
+                fontSize:11,
+                opacity: reportLoading || !!reportError || pdfExporting ? 0.55 : 1,
+                cursor: reportLoading || !!reportError || pdfExporting ? "not-allowed" : "pointer",
+              }}
+            >
+              {pdfExporting ? "Preparing PDF..." : "⬇ Download PDF"}
+            </button>
+          </div>
 
           {reportLoading && (
             <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", marginBottom:10 }}>Loading cumulative report...</div>

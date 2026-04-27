@@ -7,6 +7,7 @@ const replySchema = new mongoose.Schema(
     senderName: String,
     senderRole: String,
     senderDesignation: String,
+    isAnonymousSender: { type: Boolean, default: false },
     message:    { type: String, required: true, trim: true },
   },
   { timestamps: true }

@@ -29,6 +29,7 @@ export default function ComplaintsPage() {
   const [type, setType] = useState("all");
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
+  const [resolving, setResolving] = useState(false);
   const mine = tab === "personal" ? personal : tab === "dept" ? deptwide : isDeptAdmin ? [...personal, ...deptwide] : personal;
   const byType = type === "all" ? mine : mine.filter(c => c.type === type);
   const filtered = filter === "all" ? byType : byType.filter(c => normalizeComplaintStatus(c.status) === filter);
@@ -38,6 +39,19 @@ export default function ComplaintsPage() {
   const isSubmitterOfExpanded = expandedComplaint && String(expandedComplaint.submittedBy?._id || expandedComplaint.submittedBy) === String(currentUser._id);
   const expandedStatus = expandedComplaint ? normalizeComplaintStatus(expandedComplaint.status) : null;
   const canResolveExpanded = isSubmitterOfExpanded && (expandedStatus === "in-progress" || expandedStatus === "resolved");
+
+  const handleResolve = async () => {
+    if (!expandedComplaint) return;
+    try {
+      setResolving(true);
+      await updateComplaint(expandedComplaint._id, { status: "resolved" });
+    } catch (err) {
+      console.error("Error resolving complaint:", err);
+      alert("Failed to resolve complaint. Please try again.");
+    } finally {
+      setResolving(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedComplaintId) {
@@ -52,7 +66,6 @@ export default function ComplaintsPage() {
         <div style={{ fontSize:19, fontWeight:800, color:"white" }}>
           {isDeptAdmin ? (tab === "personal" ? "📥 Personal Inbox" : "📊 Department Complaints") : isStaff ? "📥 Inbox — Directed to Me" : "📋 My Complaints"}
         </div>
-        {!isStaff && !isDeptAdmin && <button style={{ ...S.btn, ...S.btnTeal }} onClick={() => setPage("new-complaint")}>+ New</button>}
       </div>
 
       {isDeptAdmin && (
@@ -85,6 +98,15 @@ export default function ComplaintsPage() {
         ))}
       </div>
 
+      {/* New Complaint Button - positioned here before complaints start */}
+      {!isStaff && !isDeptAdmin && (
+        <div style={{ marginBottom:14 }}>
+          <button style={{ ...S.btn, ...S.btnTeal }} onClick={() => setPage("new-complaint")}>
+            + New Complaint
+          </button>
+        </div>
+      )}
+
       {/* Status filter */}
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:14, justifyContent:"space-between" }}>
         <div style={{ display:"flex", gap:6 }}>
@@ -101,8 +123,8 @@ export default function ComplaintsPage() {
         </div>
         {canResolveExpanded && expandedComplaint && (
           <button
-            onClick={() => updateComplaint(expandedComplaint._id, { status: "resolved" })}
-            disabled={expandedStatus === "resolved"}
+            onClick={handleResolve}
+            disabled={expandedStatus === "resolved" || resolving}
             style={{
               ...S.btn,
               padding:"5px 13px",
@@ -110,10 +132,11 @@ export default function ComplaintsPage() {
               background: expandedStatus === "resolved" ? "rgba(107,114,128,.25)" : "rgba(16,185,129,.18)",
               border: expandedStatus === "resolved" ? "1px solid rgba(107,114,128,.45)" : "1px solid rgba(16,185,129,.45)",
               color: expandedStatus === "resolved" ? "#D1D5DB" : "#6EE7B7",
-              cursor: expandedStatus === "resolved" ? "default" : "pointer",
+              cursor: expandedStatus === "resolved" || resolving ? "default" : "pointer",
+              opacity: resolving ? 0.6 : 1,
             }}
           >
-            {expandedStatus === "resolved" ? "✓ Resolved" : "Mark as Resolved"}
+            {resolving ? "Resolving..." : expandedStatus === "resolved" ? "✓ Resolved" : "Mark as Resolved"}
           </button>
         )}
       </div>

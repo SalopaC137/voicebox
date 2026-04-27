@@ -109,7 +109,7 @@ function Shell() {
   return (
     <div style={{ minHeight:"100vh", background:"#0B1220", color:"rgba(255,255,255,.88)", fontFamily:"system-ui,sans-serif", fontSize:14 }}>
       <NavBar />
-      <div style={{ marginLeft: isMobile ? 0 : (navOpen ? "200px" : "60px") }}>
+      <div style={{ marginLeft: isMobile ? 0 : (navOpen ? "200px" : "60px"), transition: "margin-left 0.3s ease", willChange: "margin-left" }}>
         <PageRouter />
       </div>
 

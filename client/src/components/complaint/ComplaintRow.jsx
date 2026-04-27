@@ -164,6 +164,10 @@ export default function ComplaintRow({ c, onExpandChange }) {
             <div style={{ marginBottom:10 }}>
               <div style={{ fontSize:10, fontWeight:700, color:"rgba(59,130,246,.5)", marginBottom:7, textTransform:"uppercase", letterSpacing:".06em" }}>💬 Replies</div>
               {c.replies.map(reply => {
+                const isAnonymousSubmitterReply = c.isAnonymous && !isAdmin && !isSubmitter && (
+                  reply.isAnonymousSender ||
+                  String(reply.senderId || "") === String(c.submittedBy?._id || c.submittedBy || "")
+                );
                 const roleColors = {
                   school_admin: { bg:"rgba(245,158,11,.07)", border:"rgba(245,158,11,.18)", text:"#FCD34D", icon:"🏫" },
                   dept_admin:   { bg:"rgba(168,85,247,.07)", border:"rgba(168,85,247,.18)", text:"#D8B4FE", icon:"🏬" },
@@ -171,6 +175,10 @@ export default function ComplaintRow({ c, onExpandChange }) {
                   student:      { bg:"rgba(16,185,129,.07)", border:"rgba(16,185,129,.18)", text:"#6EE7B7", icon:"🎓" },
                 };
                 const style = roleColors[reply.senderRole] || roleColors.staff;
+                const displayName = isAnonymousSubmitterReply ? "Anonymous" : reply.senderName;
+                const displayRole = isAnonymousSubmitterReply
+                  ? "Anonymous sender"
+                  : (ROLE_LABELS[reply.senderRole]?.label || reply.senderRole);
                 return (
                   <div key={reply._id || Math.random()} style={{ display:"flex", gap:8, marginBottom:8 }}>
                     <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0, background:style.bg.replace("0.07", "0.2"), border:`1px solid ${style.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11 }}>
@@ -178,7 +186,7 @@ export default function ComplaintRow({ c, onExpandChange }) {
                     </div>
                     <div style={{ flex:1, background:style.bg, border:`1px solid ${style.border}`, borderRadius:10, borderBottomLeftRadius:2, padding:"8px 11px" }}>
                       <div style={{ fontSize:11, fontWeight:700, color:style.text, marginBottom:2 }}>
-                        {reply.senderName} ({ROLE_LABELS[reply.senderRole]?.label || reply.senderRole}) <span style={{ fontFamily:"monospace", color:"rgba(255,255,255,.3)", fontWeight:400 }}>{reply.senderUid}</span>
+                        {displayName} ({displayRole}) {!isAnonymousSubmitterReply && reply.senderUid ? <span style={{ fontFamily:"monospace", color:"rgba(255,255,255,.3)", fontWeight:400 }}>{reply.senderUid}</span> : null}
                       </div>
                       <div style={{ fontSize:12, color:"rgba(255,255,255,.75)" }}>{reply.message}</div>
                       <div style={{ fontSize:10, color:"rgba(255,255,255,.28)", marginTop:3 }}>{fmtDate(reply.createdAt)}</div>

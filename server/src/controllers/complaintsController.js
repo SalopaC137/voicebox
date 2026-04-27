@@ -72,13 +72,30 @@ exports.getComplaints = async (req, res) => {
     // enforce anonymity at the API level: only admins and the original submitter
     // should ever see the real submitter info.  Everyone else gets a blank.
     const isAdmin = req.user.role === "school_admin" || req.user.role === "dept_admin";
-    complaints = complaints.map(c => {
-      if (c.isAnonymous && !isAdmin && String(c.submittedBy?._id) !== String(req.user._id)) {
-        c = c.toObject(); // strip mongoose helpers so we can mutate
+    complaints = complaints.map((complaint) => {
+      const submitterId = String(complaint.submittedBy?._id || complaint.submittedBy || "");
+      if (complaint.isAnonymous && !isAdmin && submitterId !== String(req.user._id)) {
+        const c = complaint.toObject(); // strip mongoose helpers so we can mutate safely
         c.submittedBy = null;
         c.submitterUid = null;
+        if (Array.isArray(c.replies)) {
+          c.replies = c.replies.map((reply) => {
+            const isSubmitterReply = String(reply.senderId || "") === submitterId;
+            if (reply.isAnonymousSender || isSubmitterReply) {
+              return {
+                ...reply,
+                senderName: "Anonymous",
+                senderUid: null,
+                senderDesignation: null,
+                isAnonymousSender: true,
+              };
+            }
+            return reply;
+          });
+        }
+        return c;
       }
-      return c;
+      return complaint;
     });
 
     res.json(complaints);
@@ -293,12 +310,14 @@ exports.addReply = async (req, res) => {
       return res.status(403).json({ message: "Only the recipient, sender, or department admin can reply." });
     }
     
+    const isAnonymousSubmitterReply = c.isAnonymous && isSubmitter;
     c.replies.push({
       senderId:   req.user._id,
-      senderUid:  req.user.uniqueId,
-      senderName: `${req.user.firstName} ${req.user.lastName}`,
+      senderUid:  isAnonymousSubmitterReply ? null : req.user.uniqueId,
+      senderName: isAnonymousSubmitterReply ? "Anonymous" : `${req.user.firstName} ${req.user.lastName}`,
       senderRole: req.user.role,
-      senderDesignation: req.user.designation,
+      senderDesignation: isAnonymousSubmitterReply ? null : req.user.designation,
+      isAnonymousSender: isAnonymousSubmitterReply,
       message:    req.body.message,
     });
     
