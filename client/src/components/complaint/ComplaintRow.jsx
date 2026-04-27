@@ -8,7 +8,7 @@ import { ROLE_LABELS } from "../../data/university";
 
 const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api`;
 
-export default function ComplaintRow({ c }) {
+export default function ComplaintRow({ c, onExpandChange }) {
   const { users }                                  = useApp();
   const { updateComplaint, deleteComplaint, addReply } = useApp();
   const { currentUser } = useAuth();
@@ -40,6 +40,12 @@ export default function ComplaintRow({ c }) {
     }
   }, [c._forceExpand]);
 
+  useEffect(() => {
+    if (onExpandChange) {
+      onExpandChange(expanded);
+    }
+  }, [expanded, onExpandChange]);
+
   const handleExpand = () => {
     setExpanded(p => !p);
     // Mark as read when expanded
@@ -67,6 +73,8 @@ export default function ComplaintRow({ c }) {
       borderRadius:12,
       padding:12,
       marginBottom:12,
+      marginLeft:0,
+      marginRight:0,
       background:c._highlight?"rgba(45,212,191,.08)":"rgba(255,255,255,.03)",
       border:c._highlight?"1px solid rgba(45,212,191,.35)":"1px solid rgba(255,255,255,.08)",
     }}>
@@ -119,7 +127,7 @@ export default function ComplaintRow({ c }) {
 
       {/* ── Expanded body ── */}
       {expanded && (
-        <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(255,255,255,.05)" }}>
+        <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(255,255,255,.05)", marginLeft:0, marginRight:0 }}>
 
           {/* Description */}
           <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", lineHeight:1.65, background:"rgba(255,255,255,.03)", borderRadius:8, padding:"10px 12px", marginBottom:12 }}>
@@ -181,28 +189,7 @@ export default function ComplaintRow({ c }) {
             </div>
           )}
 
-          {isSubmitter && (currentStatus === "in-progress" || currentStatus === "resolved") && (
-            <div style={{ marginBottom:12 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(16,185,129,.6)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>
-                ✅ Resolution Confirmation
-              </div>
-              <button
-                onClick={() => currentStatus === "in-progress" && updateComplaint(c._id, { status: "resolved" })}
-                disabled={currentStatus === "resolved"}
-                style={{
-                  ...S.btn,
-                  padding:"8px 12px",
-                  fontSize:12,
-                  background: currentStatus === "resolved" ? "rgba(107,114,128,.25)" : "rgba(16,185,129,.18)",
-                  border: currentStatus === "resolved" ? "1px solid rgba(107,114,128,.45)" : "1px solid rgba(16,185,129,.45)",
-                  color: currentStatus === "resolved" ? "#D1D5DB" : "#6EE7B7",
-                  cursor: currentStatus === "resolved" ? "default" : "pointer",
-                }}
-              >
-                {currentStatus === "resolved" ? "Resolved" : "Mark as Resolved"}
-              </button>
-            </div>
-          )}
+
 
           {/* Reply box (staff / dept_admin who is the target, OR student who submitted) */}
           {canReply && currentStatus !== "resolved" && (
