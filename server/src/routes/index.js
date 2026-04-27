@@ -14,11 +14,12 @@ const registerSocket  = require("./utils/socket");
 const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, {
-  cors: { origin: process.env.CLIENT_URL || "http://localhost:5173", methods: ["GET","POST"] },
+  cors: { origin: process.env.CLIENT_URL || "http://localhost:5173", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"] },
 });
 
 // ── Middleware ───────────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"] }));
+app.options("*", cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"] }));
 app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────

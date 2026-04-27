@@ -43,7 +43,7 @@ const io     = new Server(server, {
       if (!origin || isAllowedOrigin(origin)) return callback(null, true);
       return callback(new Error(`CORS not allowed for origin: ${origin}`));
     },
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true
   }
 });
@@ -57,8 +57,16 @@ app.use(cors({
     if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error(`CORS not allowed for origin: ${origin}`));
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true
+}));
+app.options("*", cors({
+  origin: (origin, callback) => {
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
+    return callback(new Error(`CORS not allowed for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
 }));
 app.use(express.json());
 
