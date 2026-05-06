@@ -162,11 +162,11 @@ function Shell() {
           {showTopNotifications && (
             <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(320px, calc(100vw - 16px))" : 320, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "var(--panel-bg)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>Notifications</div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "var(--text)" }}>Notifications</div>
                 <button onClick={markAllNotificationsAsRead} style={{ ...{
-                  background: "rgba(255,255,255,.04)",
-                  border: "1px solid rgba(255,255,255,.08)",
-                  color: "rgba(255,255,255,.78)",
+                  background: "var(--muted-panel-bg)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-muted)",
                   borderRadius: 8,
                   padding: "4px 8px",
                   fontSize: 10,
@@ -181,8 +181,8 @@ function Shell() {
                       display: "flex",
                       gap: 8,
                       alignItems: "center",
-                      background: n.read ? "rgba(255,255,255,.02)" : "rgba(45,212,191,.08)",
-                      border: n.read ? "1px solid rgba(255,255,255,.08)" : "1px solid rgba(45,212,191,.22)",
+                      background: n.read ? "var(--muted-panel-bg)" : "var(--accent-bg)",
+                      border: n.read ? "1px solid var(--border)" : "1px solid var(--accent-border)",
                       borderRadius: 10,
                       padding: "8px 9px",
                     }}
@@ -196,7 +196,7 @@ function Shell() {
                         textAlign: "left",
                         background: "transparent",
                         border: "none",
-                        color: "rgba(255,255,255,.9)",
+                        color: "var(--text)",
                         cursor: "pointer",
                         padding: 0,
                         margin: 0,
@@ -204,7 +204,7 @@ function Shell() {
                       }}
                     >
                       <div style={{ fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{n.message}</div>
-                      <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.45)" }}>{new Date(n.createdAt).toLocaleString()}</div>
+                      <div style={{ fontSize: 9.5, color: "var(--text-soft)" }}>{new Date(n.createdAt).toLocaleString()}</div>
                     </button>
                     <button
                       onClick={(e) => {
@@ -230,7 +230,7 @@ function Shell() {
                   </div>
                 ))}
                 {notifications.length === 0 && (
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center", padding: "12px 6px" }}>No notifications yet.</div>
+                  <div style={{ fontSize: 11, color: "var(--text-soft)", textAlign: "center", padding: "12px 6px" }}>No notifications yet.</div>
                 )}
               </div>
             </div>
@@ -248,15 +248,15 @@ function Shell() {
                 {`${currentUser?.firstName || "A"}`.trim().slice(0, 2).toUpperCase()}
               </div>
               <div style={{ minWidth: 0, textAlign: "left" }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
                   {`${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() || "My Account"}
                 </div>
-                <div style={{ display: isMobile ? "none" : "block", fontSize: 11, color: "rgba(255,255,255,.62)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
+                <div style={{ display: isMobile ? "none" : "block", fontSize: 11, color: "var(--text-muted)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.1 }}>
                   {currentUser?.email || "No email"}
                 </div>
               </div>
             </div>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,.65)", flexShrink: 0 }}>{showAccountMenu ? "▲" : "▼"}</span>
+            <span style={{ fontSize: 12, color: "var(--text-muted)", flexShrink: 0 }}>{showAccountMenu ? "▲" : "▼"}</span>
           </button>
 
           {showAccountMenu && (
@@ -268,9 +268,9 @@ function Shell() {
                     setShowAccountMenu(false);
                   }}
                   style={{
-                    background: "rgba(255,255,255,.03)",
-                    border: "1px solid rgba(255,255,255,.08)",
-                    color: "rgba(255,255,255,.9)",
+                    background: "var(--muted-panel-bg)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text)",
                     borderRadius: 10,
                     padding: "9px 10px",
                     fontSize: 12,
@@ -286,9 +286,9 @@ function Shell() {
                     setShowAccountMenu(false);
                   }}
                   style={{
-                    background: "rgba(255,255,255,.03)",
-                    border: "1px solid rgba(255,255,255,.08)",
-                    color: "rgba(255,255,255,.9)",
+                    background: "var(--muted-panel-bg)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text)",
                     borderRadius: 10,
                     padding: "9px 10px",
                     fontSize: 12,
@@ -330,9 +330,9 @@ function Shell() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
               <div>
                 <div style={{ fontSize: 11, color: "#6EE7B7", fontWeight: 800, marginBottom: 3 }}>{complaintBanner.label}</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.92)" }}>{complaintBanner.message}</div>
+                <div style={{ fontSize: 12, color: "var(--text)" }}>{complaintBanner.message}</div>
               </div>
-              <button onClick={dismissComplaintBanner} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,.6)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
+              <button onClick={dismissComplaintBanner} style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
           </div>
         </div>
@@ -348,9 +348,9 @@ function Shell() {
                 disabled={!toast.complaintId}
               >
                 <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, marginBottom: 3 }}>New notification</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.9)" }}>{toast.message}</div>
+                <div style={{ fontSize: 12, color: "var(--text)" }}>{toast.message}</div>
               </button>
-              <button onClick={() => dismissToast(toast.id)} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,.55)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
+              <button onClick={() => dismissToast(toast.id)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
           </div>
         ))}

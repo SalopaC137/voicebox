@@ -3,6 +3,8 @@
   --bg: #ffffff;
   --text: #0b1220;
   --text-muted: rgba(11,18,32,.6);
+  --text-soft: rgba(11,18,32,.45);
+  --text-faint: rgba(11,18,32,.3);
   --panel-bg: #ffffff;
   --muted-panel-bg: rgba(11,18,32,0.04);
   --nav-bg: #f3f6f9;
@@ -19,6 +21,8 @@
   --bg: #0B1220;
   --text: rgba(255,255,255,.92);
   --text-muted: rgba(255,255,255,.6);
+  --text-soft: rgba(255,255,255,.45);
+  --text-faint: rgba(255,255,255,.3);
   --panel-bg: rgba(10,15,30,.96);
   --muted-panel-bg: rgba(255,255,255,.03);
   --nav-bg: #0A0F1E;
@@ -43,25 +47,17 @@ body {
   padding: 0;
 }
 
-body {
-  background: #0B1220;
-  color: rgba(255, 255, 255, 0.88);
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
-}
-
 input, textarea, select, button {
   font-family: inherit;
 }
 
 input::placeholder, textarea::placeholder {
-  color: rgba(255, 255, 255, 0.28);
+  color: var(--text-faint);
 }
 
 select option {
-  background: #1a2332;
-  color: white;
+  background: var(--panel-bg);
+  color: var(--text);
 }
 
 ::-webkit-scrollbar {

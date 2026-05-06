@@ -214,7 +214,7 @@ export default function ChatPage() {
       {/* Year selector for staff/admins */}
       {canSelectYear && (
         <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          <label style={{ fontSize:14, color:"rgba(255,255,255,.7)", fontWeight:600 }}>Select Year:</label>
+          <label style={{ fontSize:14, color:"var(--text-muted)", fontWeight:600 }}>Select Year:</label>
           <select value={selectedYear || ""} onChange={e => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
             style={{ ...S.input, fontSize:12, padding:"6px 10px", width: isMobile ? "100%" : 120 }}>
             <option value="">All Years</option>
@@ -225,7 +225,7 @@ export default function ChatPage() {
 
       {canSelectProgramType && (
         <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          <label style={{ fontSize:14, color:"rgba(255,255,255,.7)", fontWeight:600 }}>Select Program:</label>
+          <label style={{ fontSize:14, color:"var(--text-muted)", fontWeight:600 }}>Select Program:</label>
           <select
             value={selectedProgramType}
             onChange={e => {
@@ -241,7 +241,7 @@ export default function ChatPage() {
       )}
 
       {!canSelectProgramType && r === "student" && (
-        <div style={{ marginBottom:14, fontSize:12, color:"rgba(255,255,255,.45)" }}>
+        <div style={{ marginBottom:14, fontSize:12, color:"var(--text-soft)" }}>
           Showing {currentProgramType === "diploma" ? "diploma" : "degree"} program chats only.
         </div>
       )}
@@ -273,13 +273,13 @@ export default function ChatPage() {
                     </div>
                   ))}
                   {hiddenRooms.length > 0 && (
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,.25)", padding:"8px 10px", textAlign:"center", marginTop:8, borderTop:"1px solid rgba(255,255,255,.05)" }}>
+                    <div style={{ fontSize:10, color:"var(--text-faint)", padding:"8px 10px", textAlign:"center", marginTop:8, borderTop:"1px solid rgba(255,255,255,.05)" }}>
                       {hiddenRooms.length} room{hiddenRooms.length===1?"":"s"} hidden
                     </div>
                   )}
                 </>
               ) : (
-                <div style={{ fontSize:12, color:"rgba(255,255,255,.3)", padding:10, textAlign:"center" }}>
+                <div style={{ fontSize:12, color:"var(--text-faint)", padding:10, textAlign:"center" }}>
                   {rooms.length > 0 && hiddenRooms.length > 0 ? "All rooms hidden" : "No chat rooms available"}
                 </div>
               )}
@@ -296,7 +296,7 @@ export default function ChatPage() {
             <div style={{ padding:"10px 14px", borderBottom:"1px solid rgba(255,255,255,.06)", background:"rgba(255,255,255,.02)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div>
                 <div style={{ fontSize:13, fontWeight:800, color:"var(--text)" }}>{visibleRooms.find(rm=>rm.id===room)?.label || room}</div>
-                <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginTop:1 }}>{roomMsgs.length} messages {selectedYear && isCourseRoom && `(Year ${selectedYear})`}</div>
+                <div style={{ fontSize:10, color:"var(--text-faint)", marginTop:1 }}>{roomMsgs.length} messages {selectedYear && isCourseRoom && `(Year ${selectedYear})`}</div>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#10B981" }}>
@@ -319,7 +319,7 @@ export default function ChatPage() {
                         {/* ↓ CHANGED: voice bubble or plain text */}
                         {m.isVoice && m.audioData
                           ? <VoiceBubble audioData={m.audioData} duration={m.audioDuration} />
-                          : <div style={{ fontSize:12, color:"rgba(255,255,255,.85)", lineHeight:1.5 }}>{m.message}</div>
+                          : <div style={{ fontSize:12, color:"var(--text)", lineHeight:1.5 }}>{m.message}</div>
                         }
                       </div>
                       {isAdminRole(currentUser?.role) && m.isAnonymous && (
@@ -327,7 +327,7 @@ export default function ChatPage() {
                           Anon Admin: {m.senderFirstName} {m.senderLastName} ({m.senderUid})
                         </div>
                       )}
-                      <div style={{ fontSize:9.5, color:"rgba(255,255,255,.27)", marginTop:3, textAlign:isMe?"right":"left" }}>
+                      <div style={{ fontSize:9.5, color:"var(--text-faint)", marginTop:3, textAlign:isMe?"right":"left" }}>
                         {m.isAnonymous ? "Anonymous" : `${m.senderFirstName} ${m.senderLastName}`}
                         {" · "}{ROLE_LABELS[m.senderRole]?.label || m.senderRole}
                         {" · "}{fmtDate(m.createdAt)}
@@ -337,7 +337,7 @@ export default function ChatPage() {
                 );
               })}
               {roomMsgs.length === 0 && (
-                <div style={{ textAlign:"center", color:"rgba(255,255,255,.25)", padding:28, fontSize:13 }}>No messages yet. Start the conversation!</div>
+                <div style={{ textAlign:"center", color:"var(--text-faint)", padding:28, fontSize:13 }}>No messages yet. Start the conversation!</div>
               )}
               <div ref={bottomRef} />
             </div>
@@ -388,14 +388,14 @@ export default function ChatPage() {
         </div>
         ) : (
         <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)" }}>
+          <div style={{ textAlign:"center", color:"var(--text-faint)" }}>
             <div style={{ fontSize:24, marginBottom:8 }}>💬</div>
             <div style={{ marginBottom: 12 }}>
               {rooms.length > 0 && hiddenRooms.length > 0 
                 ? "All chat rooms are hidden. Remove the × to show them."
                 : "Unable to load chat rooms"}
             </div>
-            {debugInfo && <div style={{ fontSize:12, color:"rgba(255,255,255,.2)", marginTop:16, fontFamily:"monospace" }}>{debugInfo}</div>}
+            {debugInfo && <div style={{ fontSize:12, color:"var(--text-faint)", marginTop:16, fontFamily:"monospace" }}>{debugInfo}</div>}
           </div>
         </div>
         )}
@@ -450,9 +450,9 @@ function RecordingBar({ secs, onStop, onCancel }) {
 function VoicePreview({ audioURL, secs, onSend, onCancel }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 4px" }}>
-      <span style={{ fontSize:11, color:"rgba(255,255,255,.4)", flexShrink:0 }}>Preview:</span>
+      <span style={{ fontSize:11, color:"var(--text-soft)", flexShrink:0 }}>Preview:</span>
       <audio controls src={audioURL} style={{ flex:1, height:28, accentColor:"#0D9488", minWidth:0 }} />
-      <span style={{ fontSize:11, fontFamily:"monospace", color:"rgba(255,255,255,.35)", flexShrink:0 }}>{fmtSecs(secs)}</span>
+      <span style={{ fontSize:11, fontFamily:"monospace", color:"var(--text-soft)", flexShrink:0 }}>{fmtSecs(secs)}</span>
       <button onClick={onSend} style={{ ...S.btn, ...S.btnTeal, padding:"5px 14px", fontSize:12, flexShrink:0 }}>
         Send 🎤
       </button>
@@ -518,7 +518,7 @@ function VoiceBubble({ audioData, duration }) {
 
       <button onClick={toggle} style={{
         width:28, height:28, borderRadius:"50%", border:"none", cursor:"pointer", flexShrink:0,
-        background:"rgba(13,148,136,.35)", color:"white", fontSize:11,
+        background:"rgba(13,148,136,.35)", color:"var(--text)", fontSize:11,
         display:"flex", alignItems:"center", justifyContent:"center",
       }}>
         {playing ? "⏸" : "▶"}
@@ -528,7 +528,7 @@ function VoiceBubble({ audioData, duration }) {
         <div style={{ height:3, borderRadius:2, background:"rgba(255,255,255,.15)", overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${progress}%`, background:"var(--accent)", borderRadius:2, transition:"width .2s" }} />
         </div>
-        <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", fontFamily:"monospace" }}>
+        <div style={{ fontSize:9, color:"var(--text-soft)", fontFamily:"monospace" }}>
           {fmtSecs(elapsed)} / {fmtSecs(duration || 0)}
         </div>
       </div>

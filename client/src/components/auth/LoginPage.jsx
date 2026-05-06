@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div style={{ textAlign:"center", marginBottom:26 }}>
           <div style={{ ...S.logoMark, width:52, height:52, margin:"0 auto 12px", fontSize:24 }}>📢</div>
           <div style={{ fontSize:27, fontWeight:900, color:"var(--text)" }}>Voice<span style={{color:"var(--accent)"}}>Box</span></div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.38)", marginTop:3 }}>Laikipia University · Complaint & Suggestion Platform</div>
+          <div style={{ fontSize:12, color:"var(--text-soft)", marginTop:3 }}>Laikipia University · Complaint & Suggestion Platform</div>
         </div>
 
         <div style={{marginBottom:12}}>
@@ -78,11 +78,11 @@ export default function LoginPage() {
           )}
         </button>
 
-        <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
+        <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"var(--text-faint)" }}>
           <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("forgot-password")}>Forgot Password?</span>
         </div>
 
-        <div style={{ textAlign:"center", marginTop:18, fontSize:12, color:"rgba(255,255,255,.3)" }}>
+        <div style={{ textAlign:"center", marginTop:18, fontSize:12, color:"var(--text-faint)" }}>
           New here?{" "}
           <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("register")}>Create an account</span>
         </div>

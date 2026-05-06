@@ -51,7 +51,7 @@ export default function ComplaintsPage() {
               ...S.btn, padding:"5px 13px", fontSize:12,
               background: tab===t ? "rgba(168,85,247,.2)" : "rgba(255,255,255,.05)",
               border: tab===t ? "1px solid rgba(168,85,247,.4)" : "1px solid rgba(255,255,255,.1)",
-              color: tab===t ? "#C4B5FD" : "rgba(255,255,255,.55)",
+              color: tab===t ? "#C4B5FD" : "var(--text-muted)",
             }}>
               {t === "personal" ? "📥 Personal" : t === "dept" ? "📊 Department" : "📋 All"}
               {tab===t && ` (${filtered.length})`}
@@ -67,7 +67,7 @@ export default function ComplaintsPage() {
             ...S.btn, padding:"5px 13px", fontSize:12,
             background: type===t ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.05)",
             border: type===t ? "1px solid rgba(245,158,11,.4)" : "1px solid rgba(255,255,255,.1)",
-            color: type===t ? "#FCD34D" : "rgba(255,255,255,.55)",
+            color: type===t ? "#FCD34D" : "var(--text-muted)",
           }}>
             {t === "all" ? "📋 All" : t === "complaint" ? "🚨 Complaints" : "💡 Suggestions"}
           </button>
@@ -108,7 +108,7 @@ export default function ComplaintsPage() {
             }}
           />
         ))}
-        {filtered.length === 0 && <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)", padding:28 }}>No complaints here.</div>}
+        {filtered.length === 0 && <div style={{ textAlign:"center", color:"var(--text-faint)", padding:28 }}>No complaints here.</div>}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-export default function LoadingSpinner({ size = 14, color = "#fff", track = "rgba(255,255,255,.35)" }) {
+export default function LoadingSpinner({ size = 14, color = "var(--text)", track = "var(--text-soft)" }) {
   return (
     <span
       aria-hidden="true"

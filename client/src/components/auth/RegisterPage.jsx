@@ -91,7 +91,7 @@ export default function RegisterPage() {
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:24 }}>
           <div style={S.logoMark}>📢</div>
           <span style={S.logoTxt}>Voice<span style={{color:"var(--accent)"}}>Box</span> — Register</span>
-          <span style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,.3)" }}>Step {step}/4</span>
+          <span style={{ marginLeft:"auto", fontSize:11, color:"var(--text-faint)" }}>Step {step}/4</span>
         </div>
 
         {/* Step indicator */}
@@ -104,11 +104,11 @@ export default function RegisterPage() {
                   fontSize:11, fontWeight:700,
                   background: i+1<step ? "rgba(16,185,129,.2)" : i+1===step ? "#0D9488" : "rgba(255,255,255,.07)",
                   border: i+1<step ? "2px solid rgba(16,185,129,.5)" : i+1===step ? "2px solid #2DD4BF" : "2px solid rgba(255,255,255,.12)",
-                  color: i+1<=step ? "white" : "rgba(255,255,255,.3)",
+                  color: i+1<=step ? "var(--text)" : "var(--text-faint)",
                 }}>
                   {i+1 < step ? "✓" : i+1}
                 </div>
-                <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", fontWeight:700 }}>{s}</div>
+                <div style={{ fontSize:9, color:"var(--text-soft)", fontWeight:700 }}>{s}</div>
               </div>
               {i < 3 && <div style={{ flex:1, height:1, background:i+1<step?"rgba(16,185,129,.4)":"rgba(255,255,255,.1)", margin:"0 5px", marginBottom:14 }} />}
             </div>
@@ -129,8 +129,8 @@ export default function RegisterPage() {
                 }}>
                   <div style={{ fontSize:22, flexShrink:0 }}>{icon}</div>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:800, color:role===r?"#2DD4BF":"white" }}>{label}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2 }}>{desc}</div>
+                    <div style={{ fontSize:13, fontWeight:800, color:role===r?"#2DD4BF":"var(--text)" }}>{label}</div>
+                    <div style={{ fontSize:11, color:"var(--text-soft)", marginTop:2 }}>{desc}</div>
                   </div>
                 </div>
               ))}
@@ -174,8 +174,8 @@ export default function RegisterPage() {
 
             {needsCode && (
               <div style={{ background:role==="school_admin"?"rgba(245,158,11,.06)":"rgba(168,85,247,.06)", border:`1px solid ${role==="school_admin"?"rgba(245,158,11,.2)":"rgba(168,85,247,.2)"}`, borderRadius:12, padding:16, marginBottom:16, textAlign:"center" }}>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginBottom:10 }}>
-                  Enter the 6-digit <strong style={{color:"white"}}>{role==="school_admin"?"School Admin":"Dept Admin"}</strong> activation code
+                <div style={{ fontSize:12, color:"var(--text-soft)", marginBottom:10 }}>
+                  Enter the 6-digit <strong style={{color:"var(--text)"}}>{role==="school_admin"?"School Admin":"Dept Admin"}</strong> activation code
                 </div>
                 <div style={{ display:"flex", gap:8, justifyContent:"center", marginBottom:8 }}>
                   {code.map((v, i) => (
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                       style={{ width:42, height:50, borderRadius:10, background:v?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)", border:v?`1.5px solid ${role==="school_admin"?"rgba(245,158,11,.5)":"rgba(168,85,247,.5)"}`:"1.5px solid rgba(255,255,255,.15)", color:v?role==="school_admin"?"#FCD34D":"#D8B4FE":"rgba(255,255,255,.3)", fontSize:20, fontWeight:700, textAlign:"center", outline:"none" }} />
                   ))}
                 </div>
-                <div style={{ fontSize:10, color:"rgba(255,255,255,.28)" }}>
+                <div style={{ fontSize:10, color:"var(--text-faint)" }}>
                   Activation code required by administrator
                 </div>
               </div>
@@ -262,10 +262,10 @@ export default function RegisterPage() {
         {/* ── Step 4: Password ── */}
         {step === 4 && (
           <div>
-            <div style={{ fontSize:15, fontWeight:800, color:"white", marginBottom:14 }}>Set Your Password</div>
+            <div style={{ fontSize:15, fontWeight:800, color:"var(--text)", marginBottom:14 }}>Set Your Password</div>
             <div style={{marginBottom:11}}><label style={S.label}>Password</label><input style={S.input} type="password" value={form.password} onChange={e=>setF("password",e.target.value)} placeholder="Min 8 characters" /></div>
             <div style={{marginBottom:14}}><label style={S.label}>Confirm Password</label><input style={S.input} type="password" value={form.confirm} onChange={e=>setF("confirm",e.target.value)} placeholder="Repeat password" /></div>
-            <div style={{ background:"rgba(13,148,136,.06)", border:"1px solid rgba(13,148,136,.2)", borderRadius:10, padding:10, fontSize:11, color:"rgba(255,255,255,.45)" }}>
+            <div style={{ background:"rgba(13,148,136,.06)", border:"1px solid rgba(13,148,136,.2)", borderRadius:10, padding:10, fontSize:11, color:"var(--text-soft)" }}>
               <span style={{color:"#2DD4BF",fontWeight:700}}>Summary: </span>
               {roleIcon(role)} {ROLE_LABELS[role]?.label} · {form.firstName} {form.lastName}
               {form.school && ` · ${getSchoolName(form.school)}`}
@@ -300,7 +300,7 @@ export default function RegisterPage() {
             ) : step===4?"Create Account ✓":"Continue →"}
           </button>
         </div>
-        <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"rgba(255,255,255,.3)" }}>
+        <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"var(--text-faint)" }}>
           Already registered? <span style={{ color:"#2DD4BF", cursor:"pointer" }} onClick={() => setPage("login")}>Sign in</span>
         </div>
       </div>

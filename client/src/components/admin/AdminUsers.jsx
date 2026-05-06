@@ -81,14 +81,14 @@ export default function AdminUsers() {
 
   const uidColor = r => ({
     school_admin:"#FCD34D", dept_admin:"#D8B4FE", staff:"#93C5FD", student:"#6EE7B7"
-  }[r]||"white");
+  }[r]||"var(--text)");
 
   return (
     <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <div>
           <div style={{ fontSize:19, fontWeight:800, color:"var(--text)" }}>👥 {scopeTitle}</div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
+          <div style={{ fontSize:12, color:"var(--text-soft)", marginTop:2 }}>
             Showing users in your {currentUser.role==="school_admin"?"school":"department"} only
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function AdminUsers() {
         {/* Table header */}
         <div style={{ display:"grid", gridTemplateColumns:"2fr 1.2fr 1.3fr 80px 110px", gap:10, padding:"6px 0", borderBottom:"1px solid rgba(255,255,255,.07)", marginBottom:6 }}>
           {["User","Unique ID","Dept / Unit","Status","Actions"].map(h => (
-            <div key={h} style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,.25)", textTransform:"uppercase", letterSpacing:".07em" }}>{h}</div>
+            <div key={h} style={{ fontSize:10, fontWeight:700, color:"var(--text-faint)", textTransform:"uppercase", letterSpacing:".07em" }}>{h}</div>
           ))}
         </div>
 
@@ -147,11 +147,11 @@ export default function AdminUsers() {
               </div>
               <div>
                 <div style={{ fontSize:12, fontWeight:700, color:"var(--text)" }}>{u.firstName} {u.lastName}</div>
-                <div style={{ fontSize:10, color:"rgba(255,255,255,.35)" }}>{u.email}</div>
+                <div style={{ fontSize:10, color:"var(--text-soft)" }}>{u.email}</div>
               </div>
             </div>
             <div style={{ fontFamily:"monospace", fontSize:11, color:uidColor(u.role) }}>{u.uniqueId}</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,.45)" }}>{u.department ? getDeptName(u.department) : u.unitGroup || "—"}</div>
+            <div style={{ fontSize:11, color:"var(--text-soft)" }}>{u.department ? getDeptName(u.department) : u.unitGroup || "—"}</div>
             <div>
               <span style={{ ...S.badge, ...(u.isSuspended ? S.btnDanger : S.badgeRes) }}>
                 {u.isSuspended ? "Suspended" : "Active"}
@@ -171,7 +171,7 @@ export default function AdminUsers() {
         )})}
 
         {filtered.length === 0 && (
-          <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)", padding:28 }}>No users found.</div>
+          <div style={{ textAlign:"center", color:"var(--text-faint)", padding:28 }}>No users found.</div>
         )}
       </div>
     </div>

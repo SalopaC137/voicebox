@@ -36,10 +36,10 @@ export default function ForgotPasswordPage() {
         <div style={{ textAlign:"center", marginBottom:30 }}>
           <div style={{ ...S.logoMark, width:52, height:52, margin:"0 auto 12px", fontSize:24 }}>📢</div>
           <div style={{ fontSize:27, fontWeight:900, color:"var(--text)" }}>Voice<span style={{color:"var(--accent)"}}>Box</span></div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.38)", marginTop:4 }}>Forgot Password</div>
+          <div style={{ fontSize:12, color:"var(--text-soft)", marginTop:4 }}>Forgot Password</div>
         </div>
 
-        <div style={{ textAlign:"center", marginBottom:20, color:"rgba(255,255,255,.6)", fontSize:13, lineHeight:1.6 }}>
+        <div style={{ textAlign:"center", marginBottom:20, color:"var(--text-muted)", fontSize:13, lineHeight:1.6 }}>
           Enter your email address and we will send you a secure reset link.
         </div>
 
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
 
-        <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"rgba(255,255,255,.4)" }}>
+        <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"var(--text-soft)" }}>
           <span
             style={{ color:"#2DD4BF", cursor:"pointer", fontWeight:600, textDecoration:"underline", textUnderlineOffset:3 }}
             onClick={() => setPage("login")}

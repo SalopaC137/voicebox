@@ -48,9 +48,9 @@ export default function Dashboard() {
     <div style={S.page}>
       <div style={{ marginBottom:24 }}>
         <div style={{ fontSize:22, fontWeight:900, color:"var(--text)", marginBottom:4 }}>Welcome back, {currentUser.firstName} 👋</div>
-        <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>
+        <div style={{ fontSize:13, color:"var(--text-soft)" }}>
           {ROLE_LABELS[r]?.label} · {scopeLabel}
-          <span style={{ marginLeft:12, fontFamily:"monospace", fontSize:11, color:"rgba(255,255,255,.28)" }}>{currentUser.uniqueId}</span>
+          <span style={{ marginLeft:12, fontFamily:"monospace", fontSize:11, color:"var(--text-faint)" }}>{currentUser.uniqueId}</span>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export default function Dashboard() {
       {isAdmin && (
         <div style={{ background:r==="school_admin"?"rgba(245,158,11,.06)":"rgba(168,85,247,.06)", border:`1px solid ${r==="school_admin"?"rgba(245,158,11,.2)":"rgba(168,85,247,.2)"}`, borderRadius:12, padding:"10px 16px", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
           <span style={{fontSize:18}}>{r==="school_admin"?"🏫":"🏬"}</span>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.6)"}}>
+          <div style={{fontSize:12,color:"var(--text-muted)"}}>
             <span style={{fontWeight:700,color:"var(--text)"}}>
               {r==="school_admin"?`School Admin — ${getSchoolName(currentUser.school)}`:`Dept Admin — ${getDeptName(currentUser.department)}`}
             </span>
@@ -105,14 +105,14 @@ export default function Dashboard() {
               ...S.btn, padding:"4px 10px", fontSize:11,
               background: typeFilter===t ? "rgba(245,158,11,.2)" : "rgba(255,255,255,.05)",
               border: typeFilter===t ? "1px solid rgba(245,158,11,.4)" : "1px solid rgba(255,255,255,.1)",
-              color: typeFilter===t ? "#FCD34D" : "rgba(255,255,255,.55)",
+              color: typeFilter===t ? "#FCD34D" : "var(--text-muted)",
             }}>
               {t === "all" ? "📋 All" : t === "complaint" ? "🚨 Complaints" : "💡 Suggestions"}
             </button>
           ))}
         </div>
         {filtered.slice(0,5).map(c => <ComplaintRow key={c._id} c={c} />)}
-        {filtered.length===0 && <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)", padding:24, fontSize:13 }}>No complaints yet.</div>}
+        {filtered.length===0 && <div style={{ textAlign:"center", color:"var(--text-faint)", padding:24, fontSize:13 }}>No complaints yet.</div>}
       </div>
 
       <div style={{ ...S.g2, marginTop:14 }}>

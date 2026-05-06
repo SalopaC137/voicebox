@@ -98,8 +98,8 @@ export default function ComplaintRow({ c }) {
               Anon{isSubmitter?" (you)":""}
             </span>
           )}
-            <span style={{ ...S.badge, background:"rgba(255,255,255,.06)", color:"rgba(255,255,255,.4)", fontSize:9 }}>{c.category}</span>
-            <span style={{ ...S.badge, background:"rgba(255,255,255,.06)", color:"rgba(255,255,255,.4)", fontSize:9 }}>{c.type}</span>
+            <span style={{ ...S.badge, background:"var(--muted-panel-bg)", color:"var(--text-soft)", fontSize:9 }}>{c.category}</span>
+            <span style={{ ...S.badge, background:"var(--muted-panel-bg)", color:"var(--text-soft)", fontSize:9 }}>{c.type}</span>
             {(c.replies||[]).length > 0 && (
               <span style={{ ...S.badge, background:"var(--accent-bg)", color:"var(--accent)", fontSize:9, position:"relative" }}>
                 💬 {c.replies.length} repl{c.replies.length === 1 ? "y" : "ies"}
@@ -108,7 +108,7 @@ export default function ComplaintRow({ c }) {
             )}
           </div>
           <div style={{ fontSize:13, fontWeight:700, color:"var(--text)", marginBottom:2 }}>{c.title}</div>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,.38)" }}>
+          <div style={{ fontSize:11, color:"var(--text-soft)" }}>
             {c.isAnonymous && !isAdmin
               ? (isSubmitter ? "You (anonymous)" : "Anonymous")
               : submitter
@@ -130,7 +130,7 @@ export default function ComplaintRow({ c }) {
             <button onClick={e => { e.stopPropagation(); deleteComplaint(c._id); }}
               style={{ ...S.btn, ...S.btnDanger, padding:"4px 8px", fontSize:11 }}>✕</button>
           )}
-          <span style={{ color:"rgba(255,255,255,.28)", fontSize:12 }}>{expanded ? "▲" : "▼"}</span>
+          <span style={{ color:"var(--text-faint)", fontSize:12 }}>{expanded ? "▲" : "▼"}</span>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export default function ComplaintRow({ c }) {
         <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(255,255,255,.05)", marginLeft:0, marginRight:0 }}>
 
           {/* Description */}
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", lineHeight:1.65, background:"rgba(255,255,255,.03)", borderRadius:8, padding:"10px 12px", marginBottom:12 }}>
+          <div style={{ fontSize:12, color:"var(--text-muted)", lineHeight:1.65, background:"var(--muted-panel-bg)", borderRadius:8, padding:"10px 12px", marginBottom:12 }}>
             {c.description}
           </div>
 
@@ -148,9 +148,9 @@ export default function ComplaintRow({ c }) {
             <div style={{ fontSize:11, color:"#C4B5FD", fontFamily:"monospace", background:"rgba(139,92,246,.07)", border:"1px solid rgba(139,92,246,.2)", borderRadius:8, padding:"9px 12px", marginBottom:10 }}>
               <div style={{fontWeight:700, color:"#D8B4FE", marginBottom:3}}>Admin View - Anonymous Submitter</div>
               <div style={{fontSize:10, lineHeight:1.6}}>
-                <b style={{color:"white"}}>Name:</b> {submitter.firstName} {submitter.lastName}<br/>
-                <b style={{color:"white"}}>Position:</b> {submitter.designation || submitter.role || "Staff"}<br/>
-                <b style={{color:"white"}}>ID:</b> {c.submitterUid}
+                <b style={{color:"var(--text)"}}>Name:</b> {submitter.firstName} {submitter.lastName}<br/>
+                <b style={{color:"var(--text)"}}>Position:</b> {submitter.designation || submitter.role || "Staff"}<br/>
+                <b style={{color:"var(--text)"}}>ID:</b> {c.submitterUid}
               </div>
             </div>
           )}
@@ -162,7 +162,7 @@ export default function ComplaintRow({ c }) {
               {c.adminNotes.map(n => (
                 <div key={n.id} style={{ background:"rgba(245,158,11,.05)", border:"1px solid rgba(245,158,11,.18)", borderRadius:8, padding:"8px 11px", marginBottom:6 }}>
                   <div style={{ fontSize:10, color:"#FCD34D", fontWeight:700, marginBottom:2 }}>{n.senderName} · {fmtDate(n.createdAt)}</div>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,.7)" }}>{n.message}</div>
+                  <div style={{ fontSize:12, color:"var(--text-muted)" }}>{n.message}</div>
                 </div>
               ))}
             </div>
@@ -195,10 +195,10 @@ export default function ComplaintRow({ c }) {
                     </div>
                     <div style={{ flex:1, background:style.bg, border:`1px solid ${style.border}`, borderRadius:10, borderBottomLeftRadius:2, padding:"8px 11px" }}>
                       <div style={{ fontSize:11, fontWeight:700, color:style.text, marginBottom:2 }}>
-                        {displayName} ({displayRole}) {!isAnonymousSubmitterReply && reply.senderUid ? <span style={{ fontFamily:"monospace", color:"rgba(255,255,255,.3)", fontWeight:400 }}>{reply.senderUid}</span> : null}
+                        {displayName} ({displayRole}) {!isAnonymousSubmitterReply && reply.senderUid ? <span style={{ fontFamily:"monospace", color:"var(--text-faint)", fontWeight:400 }}>{reply.senderUid}</span> : null}
                       </div>
-                      <div style={{ fontSize:12, color:"rgba(255,255,255,.75)" }}>{reply.message}</div>
-                      <div style={{ fontSize:10, color:"rgba(255,255,255,.28)", marginTop:3 }}>{fmtDate(reply.createdAt)}</div>
+                      <div style={{ fontSize:12, color:"var(--text)" }}>{reply.message}</div>
+                      <div style={{ fontSize:10, color:"var(--text-faint)", marginTop:3 }}>{fmtDate(reply.createdAt)}</div>
                     </div>
                   </div>
                 );

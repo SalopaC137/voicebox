@@ -63,10 +63,10 @@ export default function SettingsPage() {
 
   return (
     <div style={{ ...S.page, maxWidth: 700, margin: "0", width: "100%" }}>
-      <div style={{ fontSize: 20, fontWeight: 900, color: "white", marginBottom: 12 }}>⚙ Settings</div>
+      <div style={{ fontSize: 20, fontWeight: 900, color: "var(--text)", marginBottom: 12 }}>⚙ Settings</div>
 
       <div style={S.card}>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.72)", marginBottom: 10 }}>
+        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 10 }}>
           Change your password below.
         </div>
 
@@ -116,7 +116,7 @@ export default function SettingsPage() {
 
       <div style={{ ...S.card, marginTop: 14, border: "1px solid rgba(239,68,68,.28)", background: "rgba(239,68,68,.06)" }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: "#FCA5A5", marginBottom: 8 }}>Danger Zone</div>
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,.72)", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
           Delete account requires a 4-digit confirmation code sent to your email.
         </div>
 

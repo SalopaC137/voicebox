@@ -178,8 +178,8 @@ export default function AdminComplaints() {
   return (
     <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ marginBottom:14 }}>
-        <div style={{ fontSize:19, fontWeight:800, color:"white" }}>📋 {scopeTitle}</div>
-        <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
+        <div style={{ fontSize:19, fontWeight:800, color:"var(--text)" }}>📋 {scopeTitle}</div>
+        <div style={{ fontSize:12, color:"var(--text-soft)", marginTop:2 }}>
           Restricted to your {currentUser.role==="school_admin"?"school":"department"}
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function AdminComplaints() {
           </div>
 
           {reportLoading && (
-            <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", marginBottom:10 }}>Loading cumulative report...</div>
+            <div style={{ fontSize:12, color:"var(--text-muted)", marginBottom:10 }}>Loading cumulative report...</div>
           )}
 
           {reportError && (
@@ -224,18 +224,18 @@ export default function AdminComplaints() {
             {[["Total",total,"var(--text)"],["Open",open,"#FCD34D"],["In Progress",inProg,"#93C5FD"],["Resolved",resolved,"#6EE7B7"],["Resolution %",`${resolRate}%`,"var(--accent)"]].map(([l,v,c]) => (
               <div key={l} style={{ background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.07)", borderRadius:10, padding:12, textAlign:"center" }}>
                 <div style={{ fontSize:20, fontWeight:900, color:c }}>{v}</div>
-                <div style={{ fontSize:10, color:"rgba(255,255,255,.38)", marginTop:2 }}>{l}</div>
+                <div style={{ fontSize:10, color:"var(--text-soft)", marginTop:2 }}>{l}</div>
               </div>
             ))}
           </div>
 
           {/* Progress bar */}
           <div style={{ marginBottom:14 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>Resolved vs Unresolved</div>
+            <div style={{ fontSize:11, fontWeight:700, color:"var(--text-soft)", marginBottom:6, textTransform:"uppercase", letterSpacing:".06em" }}>Resolved vs Unresolved</div>
             <div style={{ height:10, borderRadius:100, background:"rgba(255,255,255,.07)", overflow:"hidden" }}>
               <div style={{ height:"100%", width:`${resolRate}%`, background:"linear-gradient(90deg,#0D9488,#10B981)", borderRadius:100 }} />
             </div>
-            <div style={{ display:"flex", justifyContent:"space-between", marginTop:4, fontSize:10, color:"rgba(255,255,255,.4)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginTop:4, fontSize:10, color:"var(--text-soft)" }}>
               <span style={{color:"#6EE7B7"}}>{resolved} resolved ({resolRate}%)</span>
               <span style={{color:"#fca5a5"}}>{open+inProg} unresolved ({100-resolRate}%)</span>
             </div>
@@ -246,10 +246,10 @@ export default function AdminComplaints() {
               {/* By Dept (school admin) */}
               {currentUser.role==="school_admin" && byDept.some(d=>d.count>0) && (
                 <>
-                  <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:".06em" }}>By Department</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:"var(--text-soft)", marginBottom:8, textTransform:"uppercase", letterSpacing:".06em" }}>By Department</div>
                   {byDept.filter(d=>d.count>0).map(d => (
                     <div key={d.code} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                      <span style={{ flex:1, fontSize:12, color:"rgba(255,255,255,.65)" }}>{d.name}</span>
+                      <span style={{ flex:1, fontSize:12, color:"var(--text-muted)" }}>{d.name}</span>
                       <div style={{ height:6, width:`${Math.min(d.count*18,90)}px`, borderRadius:3, background:"rgba(13,148,136,.5)", minWidth:6 }} />
                       <span style={{ fontSize:11, fontWeight:700, color:"var(--accent)", minWidth:18, textAlign:"right" }}>{d.count}</span>
                     </div>
@@ -257,10 +257,10 @@ export default function AdminComplaints() {
                 </>
               )}
               {/* By Category */}
-              <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", margin:"10px 0 8px", textTransform:"uppercase", letterSpacing:".06em" }}>By Category</div>
+              <div style={{ fontSize:11, fontWeight:700, color:"var(--text-soft)", margin:"10px 0 8px", textTransform:"uppercase", letterSpacing:".06em" }}>By Category</div>
               {Object.entries(byCat).map(([cat,cnt]) => (
                 <div key={cat} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <span style={{ flex:1, fontSize:12, color:"rgba(255,255,255,.65)" }}>{cat}</span>
+                  <span style={{ flex:1, fontSize:12, color:"var(--text-muted)" }}>{cat}</span>
                   <div style={{ height:6, width:`${Math.min(cnt*18,90)}px`, borderRadius:3, background:"rgba(139,92,246,.5)", minWidth:6 }} />
                   <span style={{ fontSize:11, fontWeight:700, color:"#C4B5FD", minWidth:18, textAlign:"right" }}>{cnt}</span>
                 </div>
@@ -268,10 +268,10 @@ export default function AdminComplaints() {
             </div>
             {/* By Priority */}
             <div>
-              <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", marginBottom:8, textTransform:"uppercase", letterSpacing:".06em" }}>By Priority</div>
+              <div style={{ fontSize:11, fontWeight:700, color:"var(--text-soft)", marginBottom:8, textTransform:"uppercase", letterSpacing:".06em" }}>By Priority</div>
               {Object.entries(byPri).map(([p,cnt]) => (
                 <div key={p} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <span style={{ flex:1, fontSize:12, color:"rgba(255,255,255,.65)", textTransform:"capitalize" }}>{p}</span>
+                  <span style={{ flex:1, fontSize:12, color:"var(--text-muted)", textTransform:"capitalize" }}>{p}</span>
                   <div style={{ height:6, width:`${Math.min(cnt*18,90)}px`, borderRadius:3, background:"rgba(245,158,11,.5)", minWidth:6 }} />
                   <span style={{ fontSize:11, fontWeight:700, color:"#FCD34D", minWidth:18, textAlign:"right" }}>{cnt}</span>
                 </div>
@@ -318,7 +318,7 @@ export default function AdminComplaints() {
                   <div style={{ fontSize:10, color:"#FCD34D", fontWeight:700, marginBottom:1 }}>
                     📨 {n.senderName} → {targetStaff?`${targetStaff.firstName} ${targetStaff.lastName}`:c.targetLecturerUid} · {fmtDate(n.createdAt)}
                   </div>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,.65)" }}>{n.message}</div>
+                  <div style={{ fontSize:12, color:"var(--text-muted)" }}>{n.message}</div>
                 </div>
               ))}
 
@@ -342,7 +342,7 @@ export default function AdminComplaints() {
             </div>
           );
         })}
-        {filtered.length===0 && <div style={{ textAlign:"center", color:"rgba(255,255,255,.3)", padding:30 }}>No complaints match your filters.</div>}
+        {filtered.length===0 && <div style={{ textAlign:"center", color:"var(--text-faint)", padding:30 }}>No complaints match your filters.</div>}
       </div>
     </div>
   );

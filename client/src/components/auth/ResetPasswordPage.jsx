@@ -51,8 +51,8 @@ export default function ResetPasswordPage() {
         <div style={{ width:440, padding:"44px 40px", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.1)", borderRadius:22 }}>
           <div style={{ textAlign:"center", marginBottom:32 }}>
           <div style={{ ...S.logoMark, width:52, height:52, margin:"0 auto 12px", fontSize:24 }}>📢</div>
-          <div style={{ fontSize:27, fontWeight:900, color:"white" }}>Voice<span style={{color:"#2DD4BF"}}>Box</span></div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.38)", marginTop:3 }}>Reset Your Password</div>
+          <div style={{ fontSize:27, fontWeight:900, color:"var(--text)" }}>Voice<span style={{color:"var(--accent)"}}>Box</span></div>
+          <div style={{ fontSize:12, color:"var(--text-soft)", marginTop:3 }}>Reset Your Password</div>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
           </button>
         </form>
 
-        <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"rgba(255,255,255,.4)" }}>
+        <div style={{ textAlign:"center", marginTop:24, fontSize:13, color:"var(--text-soft)" }}>
           Remember your password?{" "}
           <span
             style={{ color:"#2DD4BF", cursor:"pointer", fontWeight:600, textDecoration:"underline", textUnderlineOffset:3 }}

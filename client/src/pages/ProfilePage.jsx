@@ -43,22 +43,22 @@ export default function ProfilePage() {
 
   return (
     <div style={{ ...S.page, maxWidth: 700, margin: "0", width: "100%" }}>
-      <div style={{ fontSize: 20, fontWeight: 900, color: "white", marginBottom: 12 }}>👤 Personal Profile</div>
+      <div style={{ fontSize: 20, fontWeight: 900, color: "var(--text)", marginBottom: 12 }}>👤 Personal Profile</div>
 
       <div style={{ ...S.card, marginBottom: 14 }}>
         <div style={{ ...S.g2 }}>
           <div>
             <label style={S.label}>Unique ID</label>
-            <div style={{ color: "rgba(255,255,255,.86)", fontSize: 13 }}>{currentUser?.uniqueId || "—"}</div>
+            <div style={{ color: "var(--text)", fontSize: 13 }}>{currentUser?.uniqueId || "—"}</div>
           </div>
           <div>
             <label style={S.label}>Role</label>
-            <div style={{ color: "rgba(255,255,255,.86)", fontSize: 13 }}>{currentUser?.role || "—"}</div>
+            <div style={{ color: "var(--text)", fontSize: 13 }}>{currentUser?.role || "—"}</div>
           </div>
         </div>
         <div style={{ marginTop: 10 }}>
           <label style={S.label}>Email</label>
-          <div style={{ color: "rgba(255,255,255,.86)", fontSize: 13 }}>{currentUser?.email || "—"}</div>
+          <div style={{ color: "var(--text)", fontSize: 13 }}>{currentUser?.email || "—"}</div>
         </div>
       </div>
 

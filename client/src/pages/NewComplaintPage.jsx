@@ -66,7 +66,7 @@ export default function NewComplaintPage() {
   return (
     <div style={S.page}>
       <div style={{ fontSize:19, fontWeight:800, color:"var(--text)", marginBottom:4 }}>📋 New Complaint / Suggestion</div>
-      <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", marginBottom:22 }}>
+      <div style={{ fontSize:12, color:"var(--text-soft)", marginBottom:22 }}>
         Direct your {r==="student"?"complaint or suggestion":"complaint, suggestion or escalation"} to a specific person — required.
       </div>
 
@@ -108,7 +108,7 @@ export default function NewComplaintPage() {
                   Step 3 — Select Person {missingTarget && <span style={{color:"#fca5a5"}}>← required</span>}
                 </label>
                 {currentList.length === 0
-                  ? <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", padding:"8px 0" }}>No staff in this area yet.</div>
+                  ? <div style={{ fontSize:12, color:"var(--text-soft)", padding:"8px 0" }}>No staff in this area yet.</div>
                   : <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                       {currentList.map(u => (
                         <div key={u._id} onClick={()=>{setF("targetLecturerUid",u.uniqueId);setF("targetLecturerId",u._id);}} style={{
@@ -123,7 +123,7 @@ export default function NewComplaintPage() {
                           </div>
                           <div style={{ flex:1 }}>
                             <div style={{ fontSize:12, fontWeight:700, color:"var(--text)" }}>{u.firstName} {u.lastName}</div>
-                            <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", fontFamily:"monospace" }}>
+                            <div style={{ fontSize:10, color:"var(--text-soft)", fontFamily:"monospace" }}>
                               {u.uniqueId} Â· {u.designation || ROLE_LABELS[u.role]?.label} Â· {getDeptName(u.department)}
                             </div>
                           </div>
@@ -135,15 +135,15 @@ export default function NewComplaintPage() {
               </>
             )}
             {!form.targetDept && (
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.28)", marginTop:4, fontStyle:"italic" }}>Select a school and department above to see available staff.</div>
+              <div style={{ fontSize:11, color:"var(--text-faint)", marginTop:4, fontStyle:"italic" }}>Select a school and department above to see available staff.</div>
             )}
           </div>
 
           {/* Anon toggle */}
           <div onClick={() => setF("isAnonymous",!form.isAnonymous)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(139,92,246,.06)", border:"1px solid rgba(139,92,246,.2)", borderRadius:12, padding:"11px 15px", cursor:"pointer" }}>
             <div>
-              <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.8)" }}>🎭 Submit Anonymously</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", marginTop:2 }}>Your name & UID hidden from the recipient</div>
+              <div style={{ fontSize:13, fontWeight:700, color:"var(--text)" }}>🎭 Submit Anonymously</div>
+              <div style={{ fontSize:11, color:"var(--text-soft)", marginTop:2 }}>Your name & UID hidden from the recipient</div>
             </div>
             <div style={{ width:34, height:18, borderRadius:100, display:"flex", alignItems:"center", padding:2, background:form.isAnonymous?"rgba(139,92,246,.4)":"rgba(255,255,255,.1)", border:`1px solid ${form.isAnonymous?"rgba(139,92,246,.6)":"rgba(255,255,255,.2)"}` }}>
               <div style={{ width:14, height:14, borderRadius:"50%", background:form.isAnonymous?"#8B5CF6":"rgba(255,255,255,.4)", marginLeft:form.isAnonymous?"auto":0, transition:"all .15s" }} />
@@ -153,7 +153,7 @@ export default function NewComplaintPage() {
 
         {/* ──── Right: details ──── */}
         <div style={S.card}>
-          <div style={{ fontSize:13, fontWeight:800, color:"white", marginBottom:12 }}>📝 Complaint Details</div>
+          <div style={{ fontSize:13, fontWeight:800, color:"var(--text)", marginBottom:12 }}>📝 Complaint Details</div>
 
           <div style={{ display:"flex", gap:7, marginBottom:12 }}>
             {["complaint","suggestion"].map(t => (
@@ -182,7 +182,7 @@ export default function NewComplaintPage() {
           </div>
 
           {form.targetLecturerUid && (
-            <div style={{ background:"rgba(13,148,136,.07)", border:"1px solid rgba(13,148,136,.2)", borderRadius:10, padding:11, marginBottom:12, fontSize:12, lineHeight:1.8, color:"rgba(255,255,255,.55)" }}>
+            <div style={{ background:"rgba(13,148,136,.07)", border:"1px solid rgba(13,148,136,.2)", borderRadius:10, padding:11, marginBottom:12, fontSize:12, lineHeight:1.8, color:"var(--text-muted)" }}>
               <div style={{ fontWeight:700, color:"#2DD4BF", marginBottom:3 }}>ðŸ“‹ Summary</div>
               <b style={{color:"var(--text)"}}>To:</b> <span style={{color:"#93C5FD",fontFamily:"monospace"}}>{form.targetLecturerUid}</span><br/>
               <b style={{color:"var(--text)"}}>Dept:</b> {getDeptName(form.targetDept)} Â· <b style={{color:"var(--text)"}}>School:</b> {isNonAcad?"Non-Academic":getSchoolName(form.targetSchool)}<br/>
