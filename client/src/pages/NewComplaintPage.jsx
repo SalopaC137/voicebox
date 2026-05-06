@@ -65,7 +65,7 @@ export default function NewComplaintPage() {
 
   return (
     <div style={S.page}>
-      <div style={{ fontSize:19, fontWeight:800, color:"white", marginBottom:4 }}>📋 New Complaint / Suggestion</div>
+      <div style={{ fontSize:19, fontWeight:800, color:"var(--text)", marginBottom:4 }}>📋 New Complaint / Suggestion</div>
       <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", marginBottom:22 }}>
         Direct your {r==="student"?"complaint or suggestion":"complaint, suggestion or escalation"} to a specific person — required.
       </div>
@@ -74,7 +74,7 @@ export default function NewComplaintPage() {
         {/* ──── Left: targeting ──── */}
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div style={{ ...S.card, border:missingTarget?"1px solid rgba(239,68,68,.35)":"1px solid rgba(255,255,255,.08)" }}>
-            <div style={{ fontSize:13, fontWeight:800, color:"white", marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:800, color:"var(--text)", marginBottom:12 }}>
               🎯 Direct To <span style={{ fontSize:11, color:"rgba(239,68,68,.6)", fontWeight:400 }}>(required)</span>
             </div>
 
@@ -122,7 +122,7 @@ export default function NewComplaintPage() {
                             {roleIcon(u.role)}
                           </div>
                           <div style={{ flex:1 }}>
-                            <div style={{ fontSize:12, fontWeight:700, color:"white" }}>{u.firstName} {u.lastName}</div>
+                            <div style={{ fontSize:12, fontWeight:700, color:"var(--text)" }}>{u.firstName} {u.lastName}</div>
                             <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", fontFamily:"monospace" }}>
                               {u.uniqueId} Â· {u.designation || ROLE_LABELS[u.role]?.label} Â· {getDeptName(u.department)}
                             </div>
@@ -184,9 +184,9 @@ export default function NewComplaintPage() {
           {form.targetLecturerUid && (
             <div style={{ background:"rgba(13,148,136,.07)", border:"1px solid rgba(13,148,136,.2)", borderRadius:10, padding:11, marginBottom:12, fontSize:12, lineHeight:1.8, color:"rgba(255,255,255,.55)" }}>
               <div style={{ fontWeight:700, color:"#2DD4BF", marginBottom:3 }}>ðŸ“‹ Summary</div>
-              <b style={{color:"white"}}>To:</b> <span style={{color:"#93C5FD",fontFamily:"monospace"}}>{form.targetLecturerUid}</span><br/>
-              <b style={{color:"white"}}>Dept:</b> {getDeptName(form.targetDept)} Â· <b style={{color:"white"}}>School:</b> {isNonAcad?"Non-Academic":getSchoolName(form.targetSchool)}<br/>
-              <b style={{color:"white"}}>From:</b> <span style={{color:form.isAnonymous?"#C4B5FD":"white"}}>{form.isAnonymous?"Anonymous":`${currentUser.firstName} ${currentUser.lastName}`}</span>
+              <b style={{color:"var(--text)"}}>To:</b> <span style={{color:"#93C5FD",fontFamily:"monospace"}}>{form.targetLecturerUid}</span><br/>
+              <b style={{color:"var(--text)"}}>Dept:</b> {getDeptName(form.targetDept)} Â· <b style={{color:"var(--text)"}}>School:</b> {isNonAcad?"Non-Academic":getSchoolName(form.targetSchool)}<br/>
+              <b style={{color:"var(--text)"}}>From:</b> <span style={{color:form.isAnonymous?"#C4B5FD":"var(--text)"}}>{form.isAnonymous?"Anonymous":`${currentUser.firstName} ${currentUser.lastName}`}</span>
             </div>
           )}
 

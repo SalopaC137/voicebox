@@ -47,7 +47,7 @@ export default function Dashboard() {
   return (
     <div style={S.page}>
       <div style={{ marginBottom:24 }}>
-        <div style={{ fontSize:22, fontWeight:900, color:"white", marginBottom:4 }}>Welcome back, {currentUser.firstName} 👋</div>
+        <div style={{ fontSize:22, fontWeight:900, color:"var(--text)", marginBottom:4 }}>Welcome back, {currentUser.firstName} 👋</div>
         <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>
           {ROLE_LABELS[r]?.label} · {scopeLabel}
           <span style={{ marginLeft:12, fontFamily:"monospace", fontSize:11, color:"rgba(255,255,255,.28)" }}>{currentUser.uniqueId}</span>
@@ -59,7 +59,7 @@ export default function Dashboard() {
         <div style={{ background:r==="school_admin"?"rgba(245,158,11,.06)":"rgba(168,85,247,.06)", border:`1px solid ${r==="school_admin"?"rgba(245,158,11,.2)":"rgba(168,85,247,.2)"}`, borderRadius:12, padding:"10px 16px", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
           <span style={{fontSize:18}}>{r==="school_admin"?"🏫":"🏬"}</span>
           <div style={{fontSize:12,color:"rgba(255,255,255,.6)"}}>
-            <span style={{fontWeight:700,color:"white"}}>
+            <span style={{fontWeight:700,color:"var(--text)"}}>
               {r==="school_admin"?`School Admin — ${getSchoolName(currentUser.school)}`:`Dept Admin — ${getDeptName(currentUser.department)}`}
             </span>
             {" "}· You can only view and manage {r==="school_admin"?"your school's":"your department's"} data.
@@ -70,7 +70,7 @@ export default function Dashboard() {
       {/* Dept admin personal inbox section */}
       {r === "dept_admin" && personal.length > 0 && (
         <div style={{ marginBottom:20 }}>
-          <div style={{ fontSize:14, fontWeight:800, color:"white", marginBottom:10 }}>📥 Your Personal Inbox</div>
+          <div style={{ fontSize:14, fontWeight:800, color:"var(--text)", marginBottom:10 }}>📥 Your Personal Inbox</div>
           <div style={S.card}>
             {personal.slice(0,3).map(c => <ComplaintRow key={c._id} c={c} />)}
             {personal.length > 3 && (
@@ -94,7 +94,7 @@ export default function Dashboard() {
       {/* Recent activity */}
       <div style={S.card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-          <div style={{ fontSize:14, fontWeight:800, color:"white" }}>Recent Activity</div>
+          <div style={{ fontSize:14, fontWeight:800, color:"var(--text)" }}>Recent Activity</div>
           <button style={{ ...S.btn, ...S.btnGhost, fontSize:11, padding:"5px 11px" }}
             onClick={() => setPage(isAdmin?"admin-complaints":"complaints")}>View All →</button>
         </div>

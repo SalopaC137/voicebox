@@ -90,7 +90,7 @@ export default function RegisterPage() {
         {/* Header */}
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:24 }}>
           <div style={S.logoMark}>📢</div>
-          <span style={S.logoTxt}>Voice<span style={{color:"#2DD4BF"}}>Box</span> — Register</span>
+          <span style={S.logoTxt}>Voice<span style={{color:"var(--accent)"}}>Box</span> — Register</span>
           <span style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,.3)" }}>Step {step}/4</span>
         </div>
 
@@ -118,7 +118,7 @@ export default function RegisterPage() {
         {/* ── Step 1: Role ── */}
         {step === 1 && (
           <div>
-            <div style={{ fontSize:15, fontWeight:800, color:"white", marginBottom:14 }}>Choose Your Role</div>
+            <div style={{ fontSize:15, fontWeight:800, color:"var(--text)", marginBottom:14 }}>Choose Your Role</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {roleOpts.map(([r, icon, label, desc]) => (
                 <div key={r} onClick={() => setRole(r)} style={{
@@ -141,7 +141,7 @@ export default function RegisterPage() {
         {/* ── Step 2: Personal Info ── */}
         {step === 2 && (
           <div>
-            <div style={{ fontSize:15, fontWeight:800, color:"white", marginBottom:14 }}>Personal Information</div>
+            <div style={{ fontSize:15, fontWeight:800, color:"var(--text)", marginBottom:14 }}>Personal Information</div>
             <div style={{ ...S.g2, marginBottom:11 }}>
               <div><label style={S.label}>First Name</label><input style={S.input} value={form.firstName} onChange={e=>setF("firstName",e.target.value)} placeholder="e.g. Jane" /></div>
               <div><label style={S.label}>Last Name</label><input style={S.input} value={form.lastName} onChange={e=>setF("lastName",e.target.value)} placeholder="e.g. Mwangi" /></div>
@@ -168,7 +168,7 @@ export default function RegisterPage() {
         {/* ── Step 3: Code + School/Dept ── */}
         {step === 3 && (
           <div>
-            <div style={{ fontSize:15, fontWeight:800, color:"white", marginBottom:14 }}>
+            <div style={{ fontSize:15, fontWeight:800, color:"var(--text)", marginBottom:14 }}>
               {needsCode ? `🔐 Activation Code + ${role==="school_admin"?"School":"Department"}` : (role==="student"?"Your School & Department":"Your Department or Unit")}
             </div>
 

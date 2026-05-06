@@ -202,7 +202,7 @@ export default function ChatPage() {
 
   return (
     <div style={{ ...S.page, display:"flex", flexDirection:"column", height:"calc(100vh - 56px)", paddingBottom:0 }}>
-      <div style={{ fontSize:18, fontWeight:800, color:"white", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ fontSize:18, fontWeight:800, color:"var(--text)", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         💬 Chat Rooms
         {isMobile && (
           <button onClick={() => setShowRooms(!showRooms)} style={{ ...S.btn, ...S.btnGhost, fontSize:12, padding:"5px 10px" }}>
@@ -259,8 +259,8 @@ export default function ChatPage() {
                       <div onClick={() => handleRoomChange(rm.id)} style={{
                         flex:1, padding:"8px 10px", borderRadius:7, cursor:"pointer", fontSize:12, fontWeight:600,
                         background: room===rm.id ? "rgba(13,148,136,.13)" : "transparent",
-                        borderLeft: room===rm.id ? "2px solid #2DD4BF" : "2px solid transparent",
-                        color:      room===rm.id ? "#2DD4BF" : "rgba(255,255,255,.5)",
+                        borderLeft: room===rm.id ? "2px solid var(--accent)" : "2px solid transparent",
+                        color:      room===rm.id ? "var(--accent)" : "var(--text-muted)",
                         whiteSpace: "pre-wrap",
                         overflowWrap: "anywhere",
                         wordBreak: "break-word",
@@ -295,7 +295,7 @@ export default function ChatPage() {
             {/* Room header */}
             <div style={{ padding:"10px 14px", borderBottom:"1px solid rgba(255,255,255,.06)", background:"rgba(255,255,255,.02)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div>
-                <div style={{ fontSize:13, fontWeight:800, color:"white" }}>{visibleRooms.find(rm=>rm.id===room)?.label || room}</div>
+                <div style={{ fontSize:13, fontWeight:800, color:"var(--text)" }}>{visibleRooms.find(rm=>rm.id===room)?.label || room}</div>
                 <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginTop:1 }}>{roomMsgs.length} messages {selectedYear && isCourseRoom && `(Year ${selectedYear})`}</div>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -526,7 +526,7 @@ function VoiceBubble({ audioData, duration }) {
 
       <div style={{ flex:1, display:"flex", flexDirection:"column", gap:4 }}>
         <div style={{ height:3, borderRadius:2, background:"rgba(255,255,255,.15)", overflow:"hidden" }}>
-          <div style={{ height:"100%", width:`${progress}%`, background:"#2DD4BF", borderRadius:2, transition:"width .2s" }} />
+          <div style={{ height:"100%", width:`${progress}%`, background:"var(--accent)", borderRadius:2, transition:"width .2s" }} />
         </div>
         <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", fontFamily:"monospace" }}>
           {fmtSecs(elapsed)} / {fmtSecs(duration || 0)}

@@ -101,13 +101,13 @@ export default function ComplaintRow({ c }) {
             <span style={{ ...S.badge, background:"rgba(255,255,255,.06)", color:"rgba(255,255,255,.4)", fontSize:9 }}>{c.category}</span>
             <span style={{ ...S.badge, background:"rgba(255,255,255,.06)", color:"rgba(255,255,255,.4)", fontSize:9 }}>{c.type}</span>
             {(c.replies||[]).length > 0 && (
-              <span style={{ ...S.badge, background:"rgba(13,148,136,.1)", color:"#2DD4BF", fontSize:9, position:"relative" }}>
+              <span style={{ ...S.badge, background:"var(--accent-bg)", color:"var(--accent)", fontSize:9, position:"relative" }}>
                 💬 {c.replies.length} repl{c.replies.length === 1 ? "y" : "ies"}
                 {!expanded && !hasRead && <span style={{ display:"inline-block", width:8, height:8, borderRadius:"50%", background:"#10B981", marginLeft:6, verticalAlign:"middle" }}></span>}
               </span>
             )}
           </div>
-          <div style={{ fontSize:13, fontWeight:700, color:"white", marginBottom:2 }}>{c.title}</div>
+          <div style={{ fontSize:13, fontWeight:700, color:"var(--text)", marginBottom:2 }}>{c.title}</div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.38)" }}>
             {c.isAnonymous && !isAdmin
               ? (isSubmitter ? "You (anonymous)" : "Anonymous")

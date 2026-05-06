@@ -221,7 +221,7 @@ export default function AdminComplaints() {
 
           {/* 5 stat cards */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:14 }}>
-            {[["Total",total,"white"],["Open",open,"#FCD34D"],["In Progress",inProg,"#93C5FD"],["Resolved",resolved,"#6EE7B7"],["Resolution %",`${resolRate}%`,"#2DD4BF"]].map(([l,v,c]) => (
+            {[["Total",total,"var(--text)"],["Open",open,"#FCD34D"],["In Progress",inProg,"#93C5FD"],["Resolved",resolved,"#6EE7B7"],["Resolution %",`${resolRate}%`,"var(--accent)"]].map(([l,v,c]) => (
               <div key={l} style={{ background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.07)", borderRadius:10, padding:12, textAlign:"center" }}>
                 <div style={{ fontSize:20, fontWeight:900, color:c }}>{v}</div>
                 <div style={{ fontSize:10, color:"rgba(255,255,255,.38)", marginTop:2 }}>{l}</div>
@@ -251,7 +251,7 @@ export default function AdminComplaints() {
                     <div key={d.code} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                       <span style={{ flex:1, fontSize:12, color:"rgba(255,255,255,.65)" }}>{d.name}</span>
                       <div style={{ height:6, width:`${Math.min(d.count*18,90)}px`, borderRadius:3, background:"rgba(13,148,136,.5)", minWidth:6 }} />
-                      <span style={{ fontSize:11, fontWeight:700, color:"#2DD4BF", minWidth:18, textAlign:"right" }}>{d.count}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"var(--accent)", minWidth:18, textAlign:"right" }}>{d.count}</span>
                     </div>
                   ))}
                 </>

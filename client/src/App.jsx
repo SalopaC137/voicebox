@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider,  useApp  } from "./context/AppContext";
 
 import NavBar           from "./components/shared/NavBar";
+import S from "./utils/styles";
 import VoiceBoxLanding   from "./landingpage";
 import LoginPage        from "./components/auth/LoginPage";
 import RegisterPage     from "./components/auth/RegisterPage";
@@ -68,6 +69,19 @@ function Shell() {
   
   const isMobile = window.innerWidth < 768;
 
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("vb-theme") || "light" } catch(e){ return "light" }
+  });
+
+  useEffect(() => {
+    try {
+      document.documentElement.classList.toggle("vb-dark", theme === "dark");
+      localStorage.setItem("vb-theme", theme);
+    } catch (e) {}
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => t === "light" ? "dark" : "light");
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       const clickedAccount = accountMenuRef.current && accountMenuRef.current.contains(event.target);
@@ -88,10 +102,12 @@ function Shell() {
   
   if (loading) {
     return (
-      <div style={{ minHeight:"100vh", background:"#0B1220", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:32, marginBottom:12 }}>VB</div>
-          <div style={{ color:"rgba(255,255,255,.6)", fontSize:14 }}>Loading...</div>
+      <div style={S.app}>
+        <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>VB</div>
+            <div style={{ color:"var(--text-muted)", fontSize:14 }}>Loading...</div>
+          </div>
         </div>
       </div>
     );
@@ -100,36 +116,51 @@ function Shell() {
   // If not authenticated, don't show navbar
   if (!currentUser) {
     return (
-      <div style={{ minHeight:"100vh", background:"#0B1220", color:"rgba(255,255,255,.88)", fontFamily:"system-ui,sans-serif", fontSize:14 }}>
+      <div style={S.app}>
         <PageRouter />
       </div>
     );
   }
   
   return (
-    <div style={{ minHeight:"100vh", background:"#0B1220", color:"rgba(255,255,255,.88)", fontFamily:"system-ui,sans-serif", fontSize:14 }}>
+    <div style={S.app}>
       <NavBar />
       <div style={{ marginLeft: isMobile ? 0 : (navOpen ? "200px" : "60px"), transition: "margin-left 0.3s ease", willChange: "margin-left" }}>
         <PageRouter />
       </div>
 
       <div style={{ position: "fixed", top: isMobile ? 8 : 14, right: isMobile ? 8 : 14, zIndex: 1300, display: "flex", alignItems: "flex-start", gap: 8, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)" }}>
+        <div>
+          <button
+            onClick={toggleTheme}
+            title={theme === "light" ? "Switch to dark" : "Switch to light"}
+            className="theme-toggle-button"
+            style={{ width: 40, height: 40, borderRadius: 12, background: "var(--panel-bg)", border: "1px solid var(--border)", color: "var(--text)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 24px rgba(0,0,0,.08)", marginRight: 8 }}
+          >
+            <span aria-hidden className={`vb-theme-icon ${theme === "light" ? "sun animate" : "moon animate"}`}>
+              {theme === "light" ? "☀️" : "🌙"}
+            </span>
+            <span className="sr-only" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+              Toggle theme
+            </span>
+          </button>
+        </div>
         <div ref={notificationsMenuRef} style={{ position: "relative" }}>
           <button
             onClick={() => setShowTopNotifications((prev) => !prev)}
-            style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.18)", color: "#2DD4BF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 24px rgba(0,0,0,.32)", position: "relative" }}
+            style={{ width: 40, height: 40, borderRadius: 12, background: "var(--panel-bg)", border: "1px solid var(--accent-border)", color: "var(--accent)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 24px rgba(0,0,0,.32)", position: "relative" }}
             aria-label="Notifications"
           >
             <span style={{ fontSize: 16 }}>🔔</span>
             {unreadCount > 0 && (
-              <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, borderRadius: 999, background: "#F59E0B", color: "#111827", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #0B1220" }}>
+              <span style={{ position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, borderRadius: 999, background: "#F59E0B", color: "#111827", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid var(--bg)" }}>
                 {unreadCount}
               </span>
             )}
           </button>
 
           {showTopNotifications && (
-            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(320px, calc(100vw - 16px))" : 320, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
+            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(320px, calc(100vw - 16px))" : 320, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "var(--panel-bg)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>Notifications</div>
                 <button onClick={markAllNotificationsAsRead} style={{ ...{
@@ -207,13 +238,13 @@ function Shell() {
         </div>
 
         <div ref={accountMenuRef} style={{ position: "relative", width: "auto", maxWidth: isMobile ? "calc(100vw - 64px)" : "calc(100vw - 72px)" }}>
-          <div style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden", display: "inline-block" }}>
+          <div style={{ background: "var(--panel-bg)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 10px 24px rgba(0,0,0,.32)", overflow: "hidden", display: "inline-block" }}>
           <button
             onClick={() => setShowAccountMenu((prev) => !prev)}
             style={{ width: "100%", background: "transparent", border: "none", padding: isMobile ? "7px 9px" : "8px 10px", color: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
           >
             <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(45,212,191,.14)", border: "1px solid rgba(45,212,191,.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#2DD4BF", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--accent-bg)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
                 {`${currentUser?.firstName || "A"}`.trim().slice(0, 2).toUpperCase()}
               </div>
               <div style={{ minWidth: 0, textAlign: "left" }}>
@@ -229,7 +260,7 @@ function Shell() {
           </button>
 
           {showAccountMenu && (
-            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(220px, calc(100vw - 16px))" : 220, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "rgba(10,15,30,.98)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 8 }}>
+            <div style={{ position: "absolute", top: 48, right: 0, width: isMobile ? "min(220px, calc(100vw - 16px))" : 220, maxWidth: isMobile ? "calc(100vw - 16px)" : "calc(100vw - 24px)", background: "var(--panel-bg)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 14px 28px rgba(0,0,0,.34)", padding: 8 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <button
                   onClick={() => {
@@ -309,14 +340,14 @@ function Shell() {
 
       <div style={{ position: "fixed", top: isMobile ? "auto" : 90, bottom: isMobile ? 12 : "auto", right: 14, left: isMobile ? 14 : "auto", zIndex: 1200, display: "flex", flexDirection: "column", gap: 8, width: isMobile ? "calc(100vw - 28px)" : "min(360px, calc(100vw - 24px))" }}>
         {toasts.map((toast) => (
-          <div key={toast.id} style={{ background: "rgba(10,15,30,.96)", border: "1px solid rgba(45,212,191,.4)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.25)" }}>
+          <div key={toast.id} style={{ background: "var(--panel-bg)", border: "1px solid var(--accent-border)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 8px 20px rgba(0,0,0,.25)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
               <button
                 onClick={() => openComplaintFromNotification({ _id: toast.notificationId, complaintId: toast.complaintId, read: false })}
                 style={{ background: "transparent", border: "none", padding: 0, margin: 0, textAlign: "left", cursor: toast.complaintId ? "pointer" : "default", color: "inherit", flex: 1 }}
                 disabled={!toast.complaintId}
               >
-                <div style={{ fontSize: 11, color: "#2DD4BF", fontWeight: 700, marginBottom: 3 }}>New notification</div>
+                <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, marginBottom: 3 }}>New notification</div>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.9)" }}>{toast.message}</div>
               </button>
               <button onClick={() => dismissToast(toast.id)} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,.55)", fontSize: 14, cursor: "pointer", lineHeight: 1 }}>✕</button>

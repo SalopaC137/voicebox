@@ -39,7 +39,7 @@ export default function ComplaintsPage() {
   return (
     <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
-        <div style={{ fontSize:19, fontWeight:800, color:"white" }}>
+        <div style={{ fontSize:19, fontWeight:800, color:"var(--text)" }}>
           {isDeptAdmin ? (tab === "personal" ? "📥 Personal Inbox" : "📊 Department Complaints") : isStaff ? "📥 Inbox — Directed to Me" : "📋 My Complaints"}
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function ComplaintsPage() {
             ...S.btn, padding:"5px 13px", fontSize:12,
             background: filter===f ? "rgba(13,148,136,.2)" : "rgba(255,255,255,.05)",
             border: filter===f ? "1px solid rgba(13,148,136,.4)" : "1px solid rgba(255,255,255,.1)",
-            color: filter===f ? "#2DD4BF" : "rgba(255,255,255,.55)",
+            color: filter===f ? "var(--accent)" : "var(--text-muted)",
           }}>
             {f.charAt(0).toUpperCase()+f.slice(1)}{filter===f?` (${filtered.length})`:""}
           </button>

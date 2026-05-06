@@ -87,7 +87,7 @@ export default function AdminUsers() {
     <div style={{ ...S.page, paddingTop: 58 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <div>
-          <div style={{ fontSize:19, fontWeight:800, color:"white" }}>👥 {scopeTitle}</div>
+          <div style={{ fontSize:19, fontWeight:800, color:"var(--text)" }}>👥 {scopeTitle}</div>
           <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
             Showing users in your {currentUser.role==="school_admin"?"school":"department"} only
           </div>
@@ -146,7 +146,7 @@ export default function AdminUsers() {
                 {roleIcon(u.role)}
               </div>
               <div>
-                <div style={{ fontSize:12, fontWeight:700, color:"white" }}>{u.firstName} {u.lastName}</div>
+                <div style={{ fontSize:12, fontWeight:700, color:"var(--text)" }}>{u.firstName} {u.lastName}</div>
                 <div style={{ fontSize:10, color:"rgba(255,255,255,.35)" }}>{u.email}</div>
               </div>
             </div>
