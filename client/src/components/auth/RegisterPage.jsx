@@ -181,7 +181,7 @@ export default function RegisterPage() {
                   {code.map((v, i) => (
                     <input key={i} id={`code${i}`} maxLength={1} value={v}
                       onChange={e => { const nc=[...code]; nc[i]=e.target.value; setCode(nc); if(e.target.value&&i<5) document.getElementById(`code${i+1}`)?.focus(); }}
-                      style={{ width:42, height:50, borderRadius:10, background:v?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)", border:v?`1.5px solid ${role==="school_admin"?"rgba(245,158,11,.5)":"rgba(168,85,247,.5)"}`:"1.5px solid rgba(255,255,255,.15)", color:v?role==="school_admin"?"#FCD34D":"#D8B4FE":"rgba(255,255,255,.3)", fontSize:20, fontWeight:700, textAlign:"center", outline:"none" }} />
+                      style={{ width:42, height:50, borderRadius:10, background:v?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)", border:v?`1.5px solid ${role==="school_admin"?"rgba(245,158,11,.5)":"rgba(168,85,247,.5)"}`:"1.5px solid rgba(255,255,255,.15)", color:v?role==="school_admin"?"#FCD34D":"#D8B4FE":"var(--text-soft)", fontSize:20, fontWeight:700, textAlign:"center", outline:"none" }} />
                   ))}
                 </div>
                 <div style={{ fontSize:10, color:"var(--text-faint)" }}>

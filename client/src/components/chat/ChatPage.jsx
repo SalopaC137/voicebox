@@ -359,7 +359,7 @@ export default function ChatPage() {
               {!recording && !audioURL && (
                 <div style={{ display:"flex", alignItems:"center", gap:7 }}>
                   {/* anon toggle — unchanged */}
-                  <div onClick={() => setAnon(p=>!p)} style={{ display:"flex", alignItems:"center", gap:4, cursor:"pointer", fontSize:11, color:anon?"#C4B5FD":"rgba(255,255,255,.3)", flexShrink:0 }}>
+                  <div onClick={() => setAnon(p=>!p)} style={{ display:"flex", alignItems:"center", gap:4, cursor:"pointer", fontSize:11, color:anon?"#C4B5FD":"var(--text-faint)", flexShrink:0 }}>
                     <div style={{ width:26, height:14, borderRadius:100, display:"flex", alignItems:"center", padding:2, background:anon?"rgba(139,92,246,.4)":"rgba(255,255,255,.1)", border:`1px solid ${anon?"rgba(139,92,246,.5)":"rgba(255,255,255,.15)"}` }}>
                       <div style={{ width:10, height:10, borderRadius:"50%", background:anon?"#8B5CF6":"rgba(255,255,255,.35)", marginLeft:anon?"auto":0, transition:"all .15s" }} />
                     </div>

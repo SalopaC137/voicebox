@@ -104,7 +104,7 @@ export default function NewComplaintPage() {
 
             {form.targetDept && (
               <>
-                <label style={{ ...S.label, color:missingTarget?"#fca5a5":"rgba(255,255,255,.38)" }}>
+                <label style={{ ...S.label, color:missingTarget?"#fca5a5":"var(--text-soft)" }}>
                   Step 3 — Select Person {missingTarget && <span style={{color:"#fca5a5"}}>← required</span>}
                 </label>
                 {currentList.length === 0
